@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#ffffff">
+  <title>Northstar One — Aria, your sales assistant</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @theme {
+      --color-ink: #171717;
+      --color-on-primary: #ffffff;
+      --color-body: #4d4d4d;
+      --color-mute: #888888;
+      --color-hairline: #ebebeb;
+      --color-hairline-strong: #a1a1a1;
+      --color-canvas: #ffffff;
+      --color-canvas-soft: #fafafa;
+      --color-canvas-soft-2: #f5f5f5;
+      --color-link: #0070f3;
+      --color-link-deep: #0761d1;
+      --color-error: #ee0000;
+      --color-error-soft: #f7d4d6;
+      --color-warning: #f5a623;
+      --color-warning-soft: #ffefcf;
+      --color-cyan: #50e3c2;
+      --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+    }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  <style>
+    @keyframes typing-bounce { 0%, 80%, 100% { transform: translateY(0); opacity: .35; } 40% { transform: translateY(-3px); opacity: 1; } }
+    .dot { animation: typing-bounce 1.2s infinite ease-in-out; }
+    .dot:nth-child(2) { animation-delay: .15s; }
+    .dot:nth-child(3) { animation-delay: .3s; }
+    button, input { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+    @media (prefers-reduced-motion: reduce) {
+      .dot { animation: none; }
+      * { transition: none !important; }
+    }
+  </style>
+</head>
+<body class="h-dvh flex flex-col bg-canvas-soft text-ink font-sans antialiased">
+  <a href="#chat" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-canvas focus:text-ink focus:border focus:border-hairline focus:rounded-md focus:px-3 focus:py-2 focus:text-sm">Skip to chat</a>
+  <h1 class="sr-only">Northstar One — Aria, AI Sales Assistant</h1>
+  <header class="shrink-0 bg-canvas border-b border-hairline">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="h-8 w-8 shrink-0 rounded-lg bg-ink text-on-primary flex items-center justify-center text-sm font-semibold select-none" aria-hidden="true">N</div>
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-semibold tracking-[-0.01em]" translate="no">Northstar One</span>
+            <span id="statusPill" class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-mute bg-canvas-soft border border-hairline rounded-full px-2 py-0.5">
+              <span id="statusDot" class="h-1.5 w-1.5 rounded-full bg-cyan"></span>
+              <span id="statusText">Live</span>
+            </span>
+          </div>
+          <div class="font-mono text-[10px] uppercase tracking-[0.14em] text-mute truncate" aria-hidden="true">Aria · AI Sales Agent · Sector 79</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <button id="endBtn" class="h-7 px-3 rounded-md bg-ink text-on-primary text-sm font-medium cursor-pointer hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link disabled:opacity-50">End Conversation</button>
+        <button id="resetBtn" class="h-7 px-3 rounded-md bg-canvas text-ink border border-hairline text-sm font-medium cursor-pointer hover:bg-canvas-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link">New Chat</button>
+      </div>
+    </div>
+    <div style="background: linear-gradient(90deg, #007cf0, #00dfd8, #7928ca, #ff0080, #ff4d4d, #f9cb28);" class="h-1 w-full" aria-hidden="true"></div>
+  </header>
+
+  <main id="chat" class="flex-1 overflow-y-auto overscroll-contain" aria-live="polite">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 py-6 flex flex-col gap-4">
+      <div class="bg-canvas border border-hairline rounded-lg p-5 shadow-[0px_1px_1px_rgb(0,0,0,0.03),0px_2px_2px_rgb(0,0,0,0.04)]">
+        <p class="font-mono text-[11px] uppercase tracking-[0.14em] text-mute mb-1" translate="no">Project Northstar One · Sector 79, Gurugram</p>
+        <h2 class="text-xl font-semibold tracking-[-0.02em] text-balance mb-1">Talk to Aria</h2>
+        <p class="text-sm text-body leading-relaxed mb-3">Your AI sales assistant for Northstar Homes. Ask anything about configurations and pricing — or book a site visit.</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="inline-flex items-center font-mono text-[11px] text-body bg-canvas-soft border border-hairline rounded-full px-2.5 py-1">2 BHK · from ₹1.35&nbsp;Cr</span>
+          <span class="inline-flex items-center font-mono text-[11px] text-body bg-canvas-soft border border-hairline rounded-full px-2.5 py-1">3 BHK · from ₹1.75&nbsp;Cr</span>
+          <span class="inline-flex items-center font-mono text-[11px] text-body bg-canvas-soft border border-hairline rounded-full px-2.5 py-1">English · हिंदी · Hinglish</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <section id="analytics" aria-label="Conversation analytics" class="hidden shrink-0 bg-ink text-on-primary/80 font-mono text-xs leading-relaxed whitespace-pre-wrap overflow-y-auto max-h-80 mx-4 sm:mx-6 mb-3 rounded-lg p-4 shadow-[0px_2px_2px_rgb(0,0,0,0.06),0px_8px_16px_-4px_rgb(0,0,0,0.08)]">
+    <p class="text-cyan text-[11px] uppercase tracking-[0.16em] mb-2">Post-Conversation Analytics</p>
+    <span id="analyticsBody"></span>
+  </section>
+
+  <footer class="shrink-0 bg-canvas border-t border-hairline">
+    <form id="chatForm" class="max-w-3xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-2">
+      <label for="message" class="sr-only">Message Aria</label>
+      <input type="text" name="message" id="message" autocomplete="off" autofocus
+        class="flex-1 h-10 px-3 bg-canvas border border-hairline rounded-md text-sm placeholder:text-mute focus:outline-2 focus:outline-offset-0 focus:outline-link"
+        placeholder="Type a message in English, Hindi or Hinglish…">
+      <button type="submit" id="sendBtn" class="h-10 px-5 rounded-full bg-ink text-on-primary text-sm font-medium cursor-pointer hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link disabled:opacity-50">Send</button>
+    </form>
+  </footer>
+
+  <script>
+    const sessionId = crypto.randomUUID();
+    const chatEl = document.getElementById('chat');
+    const chatStack = chatEl.querySelector('div');
+    const form = document.getElementById('chatForm');
+    const input = document.getElementById('message');
+    const sendBtn = document.getElementById('sendBtn');
+    const endBtn = document.getElementById('endBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const analyticsEl = document.getElementById('analytics');
+    const analyticsBody = document.getElementById('analyticsBody');
+
+    let busy = false;
+
+    function addMsg(text, who) {
+      const row = document.createElement('div');
+      row.className = 'flex gap-3';
+      if (who === 'user') {
+        row.classList.add('justify-end');
+      }
+      const bubble = document.createElement('div');
+      bubble.className = 'max-w-[80%] px-4 py-3 text-[15px] leading-relaxed whitespace-pre-wrap break-words ' +
+        (who === 'user'
+          ? 'bg-ink text-on-primary rounded-lg rounded-br-sm'
+          : who === 'system'
+            ? 'bg-warning-soft border border-warning/40 text-body rounded-md'
+            : 'bg-canvas border border-hairline rounded-lg rounded-bl-sm shadow-[0px_1px_1px_rgb(0,0,0,0.03),0px_2px_2px_rgb(0,0,0,0.04)]');
+      bubble.textContent = text;
+
+      if (who === 'bot') {
+        const avatar = document.createElement('div');
+        avatar.className = 'h-7 w-7 shrink-0 rounded-full bg-ink text-on-primary flex items-center justify-center text-xs font-semibold select-none mt-1';
+        avatar.setAttribute('aria-hidden', 'true');
+        avatar.textContent = 'A';
+        row.appendChild(avatar);
+      }
+      row.appendChild(bubble);
+      chatStack.appendChild(row);
+      chatStack.scrollIntoView({ block: 'end', behavior: 'smooth' });
+    }
+
+    function addTyping() {
+      const row = document.createElement('div');
+      row.className = 'flex gap-3';
+      const avatar = document.createElement('div');
+      avatar.className = 'h-7 w-7 shrink-0 rounded-full bg-ink text-on-primary flex items-center justify-center text-xs font-semibold select-none';
+      avatar.setAttribute('aria-hidden', 'true');
+      avatar.textContent = 'A';
+      const bubble = document.createElement('div');
+      bubble.className = 'bg-canvas border border-hairline rounded-lg rounded-bl-sm px-4 py-3 flex items-center gap-1';
+      bubble.setAttribute('aria-label', 'Aria is typing');
+      bubble.id = 'typing';
+      for (let i = 0; i < 3; i++) {
+        const d = document.createElement('span');
+        d.className = 'dot h-1.5 w-1.5 rounded-full bg-mute';
+        bubble.appendChild(d);
+      }
+      row.appendChild(avatar);
+      row.appendChild(bubble);
+      chatStack.appendChild(row);
+      chatStack.scrollIntoView({ block: 'end', behavior: 'smooth' });
+    }
+
+    function removeTyping() {
+      const t = document.getElementById('typing');
+      if (t) t.closest('.flex').remove();
+    }
+
+    async function sendMessage(text) {
+      if (busy) return;
+      busy = true;
+      sendBtn.disabled = true;
+      addMsg(text, 'user');
+      addTyping();
+      try {
+        const res = await fetch('/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id: sessionId, message: text }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          removeTyping();
+          addMsg(data.detail || 'Something went wrong.', 'system');
+          return;
+        }
+        removeTyping();
+        addMsg(data.reply, 'bot');
+      } catch (err) {
+        removeTyping();
+        addMsg('Could not reach the server. Is it running on port 8000?', 'system');
+      } finally {
+        busy = false;
+        sendBtn.disabled = false;
+        input.focus();
+      }
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      sendMessage(text);
+    });
+
+    endBtn.addEventListener('click', async () => {
+      if (busy) return;
+      busy = true;
+      endBtn.disabled = true;
+      addMsg('Ending conversation and generating analytics…', 'system');
+      try {
+        const res = await fetch('/end/' + sessionId, { method: 'POST' });
+        const data = await res.json();
+        analyticsBody.textContent = JSON.stringify(data, null, 2);
+        analyticsEl.classList.remove('hidden');
+        analyticsEl.style.display = 'flex';
+        document.getElementById('statusText').textContent = 'Ended';
+        document.getElementById('statusDot').classList.remove('bg-cyan');
+        document.getElementById('statusDot').classList.add('bg-warning');
+        addMsg('Conversation ended. Analytics are shown below.', 'system');
+      } catch (err) {
+        addMsg('Could not generate analytics. Is the server running?', 'system');
+      } finally {
+        busy = false;
+        endBtn.disabled = false;
+      }
+    });
+
+    resetBtn.addEventListener('click', async () => {
+      await fetch('/reset/' + sessionId, { method: 'POST' });
+      location.reload();
+    });
+
+    addMsg('Hi! I\'m Aria from Northstar Homes. How can I help you today — are you looking for a 2 BHK or 3 BHK home?', 'bot');
+  </script>
+</body>
+</html>
