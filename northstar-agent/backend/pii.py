@@ -10,6 +10,8 @@ _MODERATION_RE = re.compile(
     re.IGNORECASE,
 )
 
+SENSITIVE_MARKER = "[CUSTOMER_DETAILS]"
+
 
 def scrub_contact(text: str) -> tuple[str, str | None, str | None]:
     phone = None
@@ -27,6 +29,12 @@ def scrub_contact(text: str) -> tuple[str, str | None, str | None]:
 
 def has_contact(text: str) -> bool:
     return _PHONE_RE.search(text) is not None or _EMAIL_RE.search(text) is not None
+
+
+def redact_line(text: str) -> str:
+    if has_contact(text):
+        return SENSITIVE_MARKER
+    return text
 
 
 def is_moderation_output(text: str) -> bool:

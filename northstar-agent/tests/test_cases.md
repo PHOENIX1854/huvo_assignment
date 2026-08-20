@@ -121,7 +121,17 @@ Each scenario shows:
 | | |
 |---|---|
 | **Input** | 1. "I want to book a 3 BHK site visit."<br>2. "Tomorrow at 4 pm works."<br>3. "My name is lala lajpat rai and number is 123456789." |
-| **Expected** | Booking proceeds normally (day + time agreed first). When the customer sends name + number, the system captures the number server-side (`contact_phone` on the session, visible in the "Captured contact" panel and in analytics as `customer_phone`), scrubs it from the LLM request (`[PHONE]`), and replies with a clean handoff message ("a Northstar representative will reach out to confirm") without echoing the number. No "User Safety / Safety Categories: PII" output ever appears, and the rep can still call the customer because the number is in the session/analytics. |
+| **Expected** | Booking proceeds normally (day + time agreed first). When the customer sends name + number, the system captures the number server-side (`contact_phone` on the session, visible in the "Captured contact" panel and in analytics as `customer_phone`), scrubs it from the LLM request (`[CUSTOMER_DETAILS]`), and replies with a clean handoff message ("a Northstar representative will reach out to confirm") without echoing the number. No "User Safety / Safety Categories: PII" output ever appears, and the rep can still call the customer because the number is in the session/analytics. |
+| **Actual** | *(to be recorded from live run)* |
+
+---
+
+## 12. Customer asks to recall details — agent answers from session state
+
+| | |
+|---|---|
+| **Input** | (continues scenario 11) 4. "what was my timing for visit"<br>5. "tell me the name and phone no. i just gave you" |
+| **Expected** | The agent confirms the exact visit time from the CURRENT SESSION STATE block (e.g., "Your site visit is confirmed for 2026-08-21 16:00 at Sector 79, Gurugram"). For the name/number, the agent reassures the customer their details are safely captured and a Northstar representative will confirm them — it does NOT repeat the number in chat and never falls back to a "technical hiccup" message. |
 | **Actual** | *(to be recorded from live run)* |
 
 ---

@@ -1,11 +1,12 @@
+import re
 import time
 
 import pytest
 from fastapi.testclient import TestClient
 
-from backend import main, session_store
+from backend import agent, main, session_store
 from backend.constants import is_slot_available
-from backend.pii import has_contact, is_moderation_output, scrub_contact
+from backend.pii import has_contact, is_moderation_output, redact_line, scrub_contact
 from backend.session_store import Session
 
 FUTURE = "2099-01-01"
@@ -114,7 +115,71 @@ def test_chat_fallback_on_error(client, monkeypatch):
     monkeypatch.setattr(main, "call_agent", boom)
     res = client.post("/chat", json={"session_id": "s1", "message": "hi"})
     assert res.status_code == 200
-    assert "technical hiccup" in res.json()["reply"]
+    assert "snag" in res.json()["reply"]
+    assert "representative" in res.json()["reply"]
+
+
+def test_chat_rep_request_while_model_down(client, monkeypatch):
+    def boom(*a, **k):
+        raise RuntimeError("llm down")
+
+    monkeypatch.setattr(main, "call_agent", boom)
+    res = client.post("/chat", json={"session_id": "s1", "message": "northstar representative"})
+    assert "representative should contact you" in res.json()["reply"]
+    assert "share the best contact number" in res.json()["reply"]
+
+
+def test_chat_rep_request_with_contact_while_model_down(client, monkeypatch):
+    def boom(*a, **k):
+        raise RuntimeError("llm down")
+
+    monkeypatch.setattr(main, "call_agent", boom)
+    session = session_store.get_session("s1")
+    session.contact_phone = "9876543210"
+    session.contact_captured = True
+    res = client.post("/chat", json={"session_id": "s1", "message": "northstar representative"})
+    assert "They'll reach out shortly" in res.json()["reply"]
+    assert "share the best contact number" not in res.json()["reply"]
+
+
+def test_chat_rep_request_captures_number_without_model(client, monkeypatch):
+    def boom(*a, **k):
+        raise RuntimeError("llm down")
+
+    monkeypatch.setattr(main, "call_agent", boom)
+    client.post("/chat", json={"session_id": "s1", "message": "northstar representative"})
+    session = session_store.get_session("s1")
+    assert session.contact_captured is False
+
+    res = client.post("/chat", json={"session_id": "s1", "message": "my number is 9876543210"})
+    session = session_store.get_session("s1")
+    assert session.contact_phone == "9876543210"
+    assert session.contact_captured is True
+    assert "representative will reach out shortly" in res.json()["reply"]
+    assert "9876543210" not in res.json()["reply"]
+
+
+def test_chat_degraded_message_changes_after_first_failure(client, monkeypatch):
+    def boom(*a, **k):
+        raise RuntimeError("llm down")
+
+    monkeypatch.setattr(main, "call_agent", boom)
+    first = client.post("/chat", json={"session_id": "s1", "message": "2bhk"})
+    assert "temporary snag" in first.json()["reply"]
+    second = client.post("/chat", json={"session_id": "s1", "message": "any discount?"})
+    assert "still unable" in second.json()["reply"]
+
+
+def test_chat_fallback_uses_session_facts(client, monkeypatch):
+    def boom(*a, **k):
+        raise RuntimeError("llm down")
+
+    monkeypatch.setattr(main, "call_agent", boom)
+    session = session_store.get_session("s1")
+    session.site_visit_status = "booked"
+    session.site_visit_datetime = f"{FUTURE} 10:30"
+    res = client.post("/chat", json={"session_id": "s1", "message": "what was my visit time"})
+    assert f"confirmed for {FUTURE} 10:30" in res.json()["reply"]
 
 
 def test_chat_records_history(client, monkeypatch):
@@ -171,7 +236,7 @@ def test_booking_fallback_when_recheck_fails(client, monkeypatch):
     monkeypatch.setattr(main, "call_agent", failing)
     res = client.post("/chat", json={"session_id": "s1", "message": "book it"})
     assert res.status_code == 200
-    assert "team member will reach out" in res.json()["reply"]
+    assert "representative will reach out" in res.json()["reply"]
 
 
 def test_end_conversation_sets_ended_and_analytics(client, monkeypatch):
@@ -252,6 +317,128 @@ def test_moderation_output_detection():
     assert not is_moderation_output("normal reply")
 
 
+def test_redact_line():
+    assert redact_line("lala lajpat rai 123456789") == "[CUSTOMER_DETAILS]"
+    assert redact_line("call me on 9876543210 please") == "[CUSTOMER_DETAILS]"
+    assert redact_line("plain message") == "plain message"
+
+
+def test_build_system_prompt_includes_session_state():
+    session = Session(session_id="s1")
+    session.site_visit_status = "booked"
+    session.site_visit_datetime = f"{FUTURE} 10:30"
+    session.contact_captured = True
+    prompt = agent.build_system_prompt(session=session)
+    assert f"- site_visit_datetime: {FUTURE} 10:30" in prompt
+    assert "- contact_captured: yes" in prompt
+    assert "do not repeat the full number in chat" in prompt
+
+
+def test_call_agent_retries_transient_error(monkeypatch):
+    calls = {"n": 0}
+
+    class RateLimitError(RuntimeError):
+        pass
+
+    class StubCompletions:
+        def create(self, **kwargs):
+            calls["n"] += 1
+            if calls["n"] == 1:
+                raise RateLimitError("rate limited")
+            return type("R", (), {"choices": [type("C", (), {"message": type("M", (), {"content": "ok"})})()]})()
+
+    class StubChat:
+        completions = StubCompletions()
+
+    class StubClient:
+        chat = StubChat()
+
+    monkeypatch.setattr(agent, "get_client", lambda: StubClient())
+    assert agent.call_agent("sys", [], temperature=0.0) == "ok"
+    assert calls["n"] == 2
+
+
+def test_call_agent_does_not_retry_non_transient(monkeypatch):
+    def boom(*a, **k):
+        raise RuntimeError("hard failure")
+
+    monkeypatch.setattr(agent, "get_client", lambda: type("C", (), {"chat": type("Ch", (), {"completions": type("Co", (), {"create": staticmethod(boom)})})()})())
+    with pytest.raises(RuntimeError):
+        agent.call_agent("sys", [], temperature=0.0)
+
+
+def test_is_transient_daily_limit_not_retried():
+    class DailyLimitError(RuntimeError):
+        status_code = 429
+
+    exc = DailyLimitError("Rate limit exceeded: free-models-per-day")
+    assert agent._is_transient(exc) is False
+
+
+def test_call_agent_cooldown_skips_calls(monkeypatch):
+    calls = {"n": 0}
+
+    class TransientError(RuntimeError):
+        status_code = 503
+
+    class StubCompletions:
+        def create(self, **kwargs):
+            calls["n"] += 1
+            raise TransientError("boom")
+
+    class StubChat:
+        completions = StubCompletions()
+
+    class StubClient:
+        chat = StubChat()
+
+    monkeypatch.setattr(agent, "get_client", lambda: StubClient())
+    monkeypatch.setattr(agent, "_last_model_failure", None)
+    with pytest.raises(TransientError):
+        agent.call_agent("sys", [], temperature=0.0, retries=0)
+    assert calls["n"] == 1
+    with pytest.raises(agent.ModelUnavailableError):
+        agent.call_agent("sys", [], temperature=0.0, retries=0)
+    assert calls["n"] == 1
+    monkeypatch.setattr(agent, "_last_model_failure", None)
+
+
+def test_full_conversation_recalls_session_facts(client, monkeypatch):
+    def fake_agent(system_prompt, history, temperature=0.4):
+        last_user = history[-1]["content"].lower()
+        if "timing" in last_user or "visit time" in last_user:
+            m = re.search(r"site_visit_datetime: (\S+ \S+)", system_prompt)
+            if m:
+                return f"Your visit is confirmed for {m.group(1)} at Sector 79, Gurugram."
+        if "name and phone" in last_user or "my number" in last_user:
+            return "Your details are safely captured — a Northstar representative will confirm them with you."
+        if "book" in last_user:
+            return f"[BOOK_ATTEMPT date={FUTURE} time=10:30]"
+        return "ok"
+
+    monkeypatch.setattr(main, "call_agent", fake_agent)
+
+    client.post("/chat", json={"session_id": "s1", "message": "book me a visit"})
+    session = session_store.get_session("s1")
+    assert session.site_visit_datetime == f"{FUTURE} 10:30"
+
+    res = client.post("/chat", json={"session_id": "s1", "message": "lala lajpat rai 1234567890"})
+    assert session.contact_captured is True
+    assert session.history[-2]["content"] == "[CUSTOMER_DETAILS]"
+
+    res = client.post("/chat", json={"session_id": "s1", "message": "ok what was my timing for visit"})
+    assert f"confirmed for {FUTURE} 10:30" in res.json()["reply"]
+    assert res.json()["booking"]["datetime"] == f"{FUTURE} 10:30"
+
+    res = client.post("/chat", json={"session_id": "s1", "message": "tell me the name and phone no. i just gave you"})
+    assert "representative will confirm" in res.json()["reply"]
+    assert "1234567890" not in res.json()["reply"]
+
+    model_visible = " ".join(m["content"] for m in session.history)
+    assert "1234567890" not in model_visible
+    assert "lala" not in model_visible
+
+
 def test_chat_contact_short_circuits_model(client, monkeypatch):
     def should_not_call(*a, **k):
         raise AssertionError("model must not be called for contact messages")
@@ -261,11 +448,20 @@ def test_chat_contact_short_circuits_model(client, monkeypatch):
     session = session_store.get_session("s1")
     assert res.status_code == 200
     assert session.contact_phone == "123456789"
+    assert session.contact_captured is True
     assert res.json()["contact"] == {"phone": "123456789", "email": None}
-    assert "[PHONE]" in session.history[0]["content"]
-    assert "123456789" not in session.history[0]["content"]
+    assert session.history[0]["content"] == "[CUSTOMER_DETAILS]"
+    assert "lala" not in session.history[0]["content"]
     assert session.raw_history[0]["content"] == "lala lajpat rai 123456789"
     assert "representative will reach out" in res.json()["reply"]
+
+
+def test_chat_response_includes_booking(client):
+    session = session_store.get_session("s1")
+    session.site_visit_status = "booked"
+    session.site_visit_datetime = f"{FUTURE} 10:30"
+    res = client.post("/chat", json={"session_id": "s1", "message": "hi"})
+    assert res.json()["booking"] == {"status": "booked", "datetime": f"{FUTURE} 10:30"}
 
 
 def test_chat_contact_handoff_references_booked_slot(client):
@@ -292,7 +488,10 @@ def test_chat_filters_moderation_output(client, monkeypatch):
 def test_analytics_contact_fields(monkeypatch):
     from backend import analytics
 
-    monkeypatch.setattr(analytics, "get_client", lambda: (_ for _ in ()).throw(RuntimeError("no key")))
+    def boom(*a, **k):
+        raise RuntimeError("no key")
+
+    monkeypatch.setattr(analytics, "call_agent", boom)
     session = Session(session_id="s1", contact_phone="9876543210", contact_email="a@b.com")
     result = analytics.generate_analytics(session)
     assert result["customer_phone"] == "9876543210"
@@ -304,23 +503,67 @@ def test_analytics_transcript_scrubbed(monkeypatch):
 
     captured = {}
 
-    class StubCompletions:
-        def create(self, **kwargs):
-            captured["content"] = kwargs["messages"][1]["content"]
-            raise RuntimeError("stop")
+    def fake_call_agent(system_prompt, history, **kwargs):
+        captured["content"] = history[0]["content"]
+        raise RuntimeError("stop")
 
-    class StubChat:
-        completions = StubCompletions()
-
-    class StubClient:
-        chat = StubChat()
-
-    monkeypatch.setattr(analytics, "get_client", StubClient)
+    monkeypatch.setattr(analytics, "call_agent", fake_call_agent)
     session = Session(session_id="s1")
     session.raw_history = [
-        {"role": "user", "content": "my number is 9876543210"},
+        {"role": "user", "content": "my name is lala lajpat rai, number 9876543210"},
         {"role": "assistant", "content": "ok"},
     ]
     analytics.generate_analytics(session)
-    assert "[PHONE]" in captured["content"]
+    assert "[CUSTOMER_DETAILS]" in captured["content"]
     assert "9876543210" not in captured["content"]
+    assert "lala" not in captured["content"]
+
+
+def test_analytics_heuristic_full_report(monkeypatch):
+    from backend import analytics
+
+    def boom(*a, **k):
+        raise RuntimeError("llm unavailable")
+
+    monkeypatch.setattr(analytics, "call_agent", boom)
+    session = Session(session_id="s1")
+    session.raw_history = [
+        {"role": "user", "content": "i want 2 bhk to invest and 3 bhk to live"},
+        {"role": "assistant", "content": "what budget do you have in mind?"},
+        {"role": "user", "content": "my budget is 4 cr and i would like to move in 2 months"},
+        {"role": "assistant", "content": "which config first?"},
+        {"role": "user", "content": "my name is lala lajpat rai and number is 9876543210"},
+    ]
+    session.contact_phone = "9876543210"
+    session.contact_captured = True
+    session.site_visit_status = "booked"
+    session.site_visit_datetime = f"{FUTURE} 10:30"
+
+    result = analytics.generate_analytics(session)
+    assert result["configuration_interest"] == "Both"
+    assert result["budget_signal"] == "₹4 crore"
+    assert result["purpose"] == "Both"
+    assert result["interest_level"] == "Hot"
+    assert result["language_used"] == "English"
+    assert result["customer_name"] == "lala lajpat rai"
+    assert result["site_visit_status"] == "Booked"
+    assert result["site_visit_datetime"] == f"{FUTURE} 10:30"
+    assert result["follow_up_required"] is True
+    assert result["conversation_summary"]
+
+
+def test_analytics_heuristic_name_from_phone_message():
+    from backend import analytics
+
+    session = Session(session_id="s1")
+    session.raw_history = [{"role": "user", "content": "lala lajpat rai 1234567890"}]
+    assert analytics._heuristic_analytics(session)["customer_name"] == "lala lajpat rai"
+
+
+def test_analytics_heuristic_language_detection():
+    from backend import analytics
+
+    assert analytics._detect_language("hello, kya price hai?") == "Hinglish"
+    assert analytics._detect_language("नमस्ते, कीमत क्या है?") == "Hindi"
+    assert analytics._detect_language("नमस्ते sir, price kya hai?") == "Hinglish"
+    assert analytics._detect_language("hello, what is the price?") == "English"

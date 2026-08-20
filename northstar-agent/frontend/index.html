@@ -203,10 +203,11 @@
     const contactPanel = document.getElementById('contactPanel');
     const contactBody = document.getElementById('contactBody');
 
-    function showContact(contact) {
+    function showContact(contact, booking) {
       const parts = [];
       if (contact && contact.phone) parts.push('Phone: ' + contact.phone);
       if (contact && contact.email) parts.push('Email: ' + contact.email);
+      if (booking && booking.datetime) parts.push('Visit: ' + booking.datetime);
       if (parts.length) {
         contactBody.textContent = parts.join('  ·  ');
         contactPanel.classList.remove('hidden');
@@ -289,7 +290,7 @@
         }
         removeTyping();
         addMsg(data.reply, 'bot');
-        showContact(data.contact);
+        showContact(data.contact, data.booking);
       } catch (err) {
         removeTyping();
         addMsg('Could not reach the server. Is it running on port 8000?', 'system');

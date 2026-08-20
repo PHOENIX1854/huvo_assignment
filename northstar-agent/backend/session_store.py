@@ -13,6 +13,7 @@ class Session:
     raw_history: list[dict] = field(default_factory=list)
     contact_phone: str | None = None
     contact_email: str | None = None
+    contact_captured: bool = False
     site_visit_status: str = "not_offered"
     site_visit_datetime: str | None = None
     booking_attempts: int = 0
@@ -22,6 +23,7 @@ class Session:
     analytics: dict | None = None
     dnd: bool = False
     escalated: bool = False
+    model_failed: bool = False
 
 
 def get_session(session_id: str, create: bool = True) -> Session:

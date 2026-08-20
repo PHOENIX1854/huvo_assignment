@@ -79,9 +79,15 @@ button calls `/end` and renders the analytics JSON on the page.
 - No real voice integration — the prompt is voice-ready, but the demo is text-only.
 - Free-tier models have tight rate limits and occasionally reply slightly off-format; the
   booking tag and analytics JSON both have code-level fallbacks for this.
+- **OpenRouter free tier caps at 50 requests/day** (`free-models-per-day`). When the quota is
+  exhausted the agent enters degraded mode: it explains honestly that its language service is
+  unavailable, notes the customer's message for a Northstar representative, breaks the
+  "technical snag" loop (a rep request gets a definitive handoff), and a 30-second circuit
+  breaker stops hammering the API. Booking state and captured contact details remain intact,
+  and analytics still produce a full heuristic report without the LLM.
 - `openrouter/free` picks models at random, so tone may vary slightly between sessions.
-- Analytics uses a best-effort second LLM call; if it fails, a fallback report built from
-  session facts is returned instead.
+- Analytics uses a best-effort second LLM call; if it fails, a heuristic report built from
+  session facts and the transcript is returned instead.
 
 ## Test cases
 

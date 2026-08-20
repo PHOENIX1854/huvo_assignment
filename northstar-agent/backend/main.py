@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 from .agent import build_system_prompt, call_agent
 from .analytics import generate_analytics
 from .constants import BOOKING_ATTEMPT_PATTERN, is_slot_available
-from .pii import has_contact, is_moderation_output, scrub_contact
+from .pii import has_contact, is_moderation_output, redact_line, scrub_contact
 from .session_store import Session, cleanup_idle, get_session, reset_session
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
@@ -25,7 +25,11 @@ app.add_middleware(
 
 _BOOKING_RE = re.compile(BOOKING_ATTEMPT_PATTERN)
 
-FALLBACK_REPLY = "I'm sorry, I'm having a small technical hiccup right now. Please try that again in a moment."
+_REP_REQUEST_RE = re.compile(
+    r"\b(representative|human|real person|someone|call me|contact me|reach out to me)\b",
+    re.IGNORECASE,
+)
+
 FALLBACK_AFTER_BOOKING = "I've noted your request — a Northstar team member will reach out shortly to confirm your visit."
 
 
@@ -44,6 +48,47 @@ def handoff_reply(session: Session) -> str:
     return (
         "Thanks! I've noted your details — a Northstar representative will reach out shortly "
         "to help with your request. Anything else I can help with?"
+    )
+
+
+def rep_handoff_reply(session: Session) -> str:
+    if session.contact_captured:
+        return (
+            "Understood — I've noted that a Northstar representative should contact you. "
+            "They'll reach out shortly to help. Anything else I can help with?"
+        )
+    return (
+        "Understood — I've noted that a Northstar representative should contact you. "
+        "To make sure they can reach you, could you please share the best contact number "
+        "or WhatsApp? Anything else you'd like me to note for them?"
+    )
+
+
+def graceful_fallback(session: Session, first_failure: bool) -> str:
+    if session.site_visit_datetime:
+        return (
+            "I've hit a temporary snag with my language service, but here's what we have: your "
+            f"site visit is confirmed for {session.site_visit_datetime} at Sector 79, Gurugram, "
+            "and your contact details are captured. A Northstar representative will reach out to "
+            "confirm. Anything else you'd like me to note for them?"
+        )
+    contact_note = (
+        " To make sure they can reach you, please share the best contact number or WhatsApp."
+        if not session.contact_captured
+        else ""
+    )
+    if first_failure:
+        return (
+            "I've hit a temporary snag — my language service is unavailable right now. I've noted "
+            "your message for a Northstar representative, who will reach out to help."
+            + contact_note
+            + " Is there anything else you'd like me to note for them?"
+        )
+    return (
+        "I'm still unable to reach my language service. I've noted your message for the Northstar "
+        "team and a representative will reach out."
+        + contact_note
+        + " Anything else you'd like me to note for them?"
     )
 
 
@@ -83,9 +128,11 @@ def _handle_booking(reply: str, session: Session) -> str:
             )
 
         try:
-            reply = call_agent(build_system_prompt(note=note), session.history)
+            reply = call_agent(build_system_prompt(note=note, session=session), session.history)
         except Exception:
-            return FALLBACK_AFTER_BOOKING
+            first_failure = not session.model_failed
+            session.model_failed = True
+            return graceful_fallback(session, first_failure)
 
         reply = _clean_reply(reply, session)
 
@@ -99,21 +146,29 @@ def chat(req: ChatRequest) -> dict:
     if session.ended:
         raise HTTPException(status_code=409, detail="Conversation already ended. Use /reset to start a new one.")
 
-    scrubbed, phone, email = scrub_contact(req.message)
+    _, phone, email = scrub_contact(req.message)
     session.raw_history.append({"role": "user", "content": req.message})
     if phone:
         session.contact_phone = phone
+        session.contact_captured = True
     if email:
         session.contact_email = email
-    session.history.append({"role": "user", "content": scrubbed})
+        session.contact_captured = True
+    session.history.append({"role": "user", "content": redact_line(req.message)})
 
     if has_contact(req.message):
         reply = handoff_reply(session)
     else:
+        first_failure = not session.model_failed
         try:
-            reply = call_agent(build_system_prompt(), session.history)
+            reply = call_agent(build_system_prompt(session=session), session.history)
+            session.model_failed = False
         except Exception:
-            reply = FALLBACK_REPLY
+            session.model_failed = True
+            if _REP_REQUEST_RE.search(req.message):
+                reply = rep_handoff_reply(session)
+            else:
+                reply = graceful_fallback(session, first_failure)
         reply = _handle_booking(reply, session)
         reply = _clean_reply(reply, session)
 
@@ -123,6 +178,10 @@ def chat(req: ChatRequest) -> dict:
         "contact": {
             "phone": session.contact_phone,
             "email": session.contact_email,
+        },
+        "booking": {
+            "status": session.site_visit_status,
+            "datetime": session.site_visit_datetime,
         },
     }
 
