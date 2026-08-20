@@ -2,6 +2,7 @@ import json
 import re
 
 from .agent import get_client, get_model
+from .pii import scrub_contact
 from .session_store import Session
 
 ANALYTICS_INSTRUCTION = """You are a sales analytics engine for Northstar Homes.
@@ -50,6 +51,8 @@ def _extract_json(content: str) -> dict | None:
 def _defaults(session: Session) -> dict:
     return {
         "customer_name": None,
+        "customer_phone": session.contact_phone,
+        "customer_email": session.contact_email,
         "language_used": "Unknown",
         "configuration_interest": "Not discussed",
         "budget_signal": None,
@@ -75,19 +78,22 @@ def _defaults(session: Session) -> dict:
 
 def generate_analytics(session: Session) -> dict:
     transcript = "\n".join(
-        f"{m['role'].upper()}: {m['content']}" for m in session.history
+        f"{m['role'].upper()}: {m['content']}" for m in session.raw_history
     )
+    scrubbed_transcript, _, _ = scrub_contact(transcript)
     facts = (
         f"Session facts from the booking system (trust these over the transcript):\n"
         f"- site_visit_status={session.site_visit_status}\n"
         f"- site_visit_datetime={session.site_visit_datetime}\n"
         f"- booking_attempts={session.booking_attempts}\n"
         f"- do_not_contact={session.dnd}\n"
-        f"- escalated_to_human={session.escalated}"
+        f"- escalated_to_human={session.escalated}\n"
+        f"- customer_phone={session.contact_phone}\n"
+        f"- customer_email={session.contact_email}"
     )
     messages = [
         {"role": "system", "content": f"{ANALYTICS_INSTRUCTION}\n\n{facts}"},
-        {"role": "user", "content": f"Conversation transcript:\n\n{transcript}"},
+        {"role": "user", "content": f"Conversation transcript:\n\n{scrubbed_transcript}"},
     ]
     try:
         response = get_client().chat.completions.create(

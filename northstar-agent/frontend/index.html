@@ -154,6 +154,11 @@
     <div style="background: linear-gradient(90deg, #007cf0, #00dfd8, #7928ca, #ff0080, #ff4d4d, #f9cb28);" class="h-1 w-full" aria-hidden="true"></div>
   </header>
 
+  <section id="contactPanel" aria-label="Captured contact details" class="hidden shrink-0 bg-canvas border border-hairline rounded-lg mx-4 sm:mx-6 mt-3 p-3 font-mono text-xs leading-relaxed shadow-[0px_1px_1px_rgb(0,0,0,0.03),0px_2px_2px_rgb(0,0,0,0.04)]">
+    <p class="text-cyan text-[11px] uppercase tracking-[0.16em] mb-1">Captured Contact</p>
+    <span id="contactBody" class="text-body"></span>
+  </section>
+
   <main id="chat" class="flex-1 overflow-y-auto overscroll-contain" aria-live="polite">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 py-6 flex flex-col gap-4">
       <div class="bg-canvas border border-hairline rounded-lg p-5 shadow-[0px_1px_1px_rgb(0,0,0,0.03),0px_2px_2px_rgb(0,0,0,0.04)] transition-all hover:border-hairline-strong hover:shadow-[0px_2px_2px_rgb(0,0,0,0.06),0px_12px_24px_-8px_rgba(121,40,202,0.15)]">
@@ -195,6 +200,18 @@
     const resetBtn = document.getElementById('resetBtn');
     const analyticsEl = document.getElementById('analytics');
     const analyticsBody = document.getElementById('analyticsBody');
+    const contactPanel = document.getElementById('contactPanel');
+    const contactBody = document.getElementById('contactBody');
+
+    function showContact(contact) {
+      const parts = [];
+      if (contact && contact.phone) parts.push('Phone: ' + contact.phone);
+      if (contact && contact.email) parts.push('Email: ' + contact.email);
+      if (parts.length) {
+        contactBody.textContent = parts.join('  ·  ');
+        contactPanel.classList.remove('hidden');
+      }
+    }
 
     let busy = false;
 
@@ -272,6 +289,7 @@
         }
         removeTyping();
         addMsg(data.reply, 'bot');
+        showContact(data.contact);
       } catch (err) {
         removeTyping();
         addMsg('Could not reach the server. Is it running on port 8000?', 'system');

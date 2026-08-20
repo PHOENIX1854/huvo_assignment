@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from .agent import build_system_prompt, call_agent
 from .analytics import generate_analytics
 from .constants import BOOKING_ATTEMPT_PATTERN, is_slot_available
+from .pii import has_contact, is_moderation_output, scrub_contact
 from .session_store import Session, cleanup_idle, get_session, reset_session
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
@@ -33,6 +34,25 @@ class ChatRequest(BaseModel):
     message: str = Field(min_length=1)
 
 
+def handoff_reply(session: Session) -> str:
+    if session.site_visit_datetime:
+        return (
+            "Thanks! I've noted your details — a Northstar representative will call or WhatsApp "
+            f"you shortly to confirm your visit for {session.site_visit_datetime}. "
+            "Anything else I can help with?"
+        )
+    return (
+        "Thanks! I've noted your details — a Northstar representative will reach out shortly "
+        "to help with your request. Anything else I can help with?"
+    )
+
+
+def _clean_reply(reply: str, session: Session) -> str:
+    if is_moderation_output(reply):
+        return handoff_reply(session)
+    return reply
+
+
 def _handle_booking(reply: str, session: Session) -> str:
     for _ in range(3):
         match = _BOOKING_RE.search(reply)
@@ -50,7 +70,7 @@ def _handle_booking(reply: str, session: Session) -> str:
             note = (
                 f"The requested site-visit slot {date_str} at {time_str} is CONFIRMED. "
                 "Reply to the customer confirming the booking (date, time, Sector 79, Gurugram) "
-                "and ask for/confirm their name and best contact number. Do not emit another booking tag."
+                "and ask for their name and best contact number. Do not emit another booking tag."
             )
         else:
             if session.booking_attempts >= 2:
@@ -67,6 +87,8 @@ def _handle_booking(reply: str, session: Session) -> str:
         except Exception:
             return FALLBACK_AFTER_BOOKING
 
+        reply = _clean_reply(reply, session)
+
     return _BOOKING_RE.sub("", reply).strip()
 
 
@@ -77,16 +99,32 @@ def chat(req: ChatRequest) -> dict:
     if session.ended:
         raise HTTPException(status_code=409, detail="Conversation already ended. Use /reset to start a new one.")
 
-    session.history.append({"role": "user", "content": req.message})
+    scrubbed, phone, email = scrub_contact(req.message)
+    session.raw_history.append({"role": "user", "content": req.message})
+    if phone:
+        session.contact_phone = phone
+    if email:
+        session.contact_email = email
+    session.history.append({"role": "user", "content": scrubbed})
 
-    try:
-        reply = call_agent(build_system_prompt(), session.history)
-    except Exception:
-        reply = FALLBACK_REPLY
+    if has_contact(req.message):
+        reply = handoff_reply(session)
+    else:
+        try:
+            reply = call_agent(build_system_prompt(), session.history)
+        except Exception:
+            reply = FALLBACK_REPLY
+        reply = _handle_booking(reply, session)
+        reply = _clean_reply(reply, session)
 
-    reply = _handle_booking(reply, session)
     session.history.append({"role": "assistant", "content": reply})
-    return {"reply": reply}
+    return {
+        "reply": reply,
+        "contact": {
+            "phone": session.contact_phone,
+            "email": session.contact_email,
+        },
+    }
 
 
 @app.post("/end/{session_id}")

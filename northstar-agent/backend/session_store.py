@@ -10,6 +10,9 @@ _LOCK = threading.Lock()
 class Session:
     session_id: str
     history: list[dict] = field(default_factory=list)
+    raw_history: list[dict] = field(default_factory=list)
+    contact_phone: str | None = None
+    contact_email: str | None = None
     site_visit_status: str = "not_offered"
     site_visit_datetime: str | None = None
     booking_attempts: int = 0
