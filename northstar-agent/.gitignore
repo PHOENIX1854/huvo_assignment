@@ -1,6 +1,9 @@
 # Environment
 .env
 
+# Local data (analytics snapshots)
+data/
+
 # Python
 __pycache__/
 *.py[cod]

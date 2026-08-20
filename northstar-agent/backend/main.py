@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 from .agent import build_system_prompt, call_agent
 from .analytics import generate_analytics
+from .analytics_store import load_analytics, save_analytics
 from .constants import BOOKING_ATTEMPT_PATTERN, is_slot_available
 from .pii import has_contact, is_moderation_output, redact_line, scrub_contact
 from .session_store import Session, cleanup_idle, get_session, reset_session
@@ -192,11 +193,15 @@ def end_conversation(session_id: str) -> dict:
     session.ended = True
     if session.analytics is None:
         session.analytics = generate_analytics(session)
-    return session.analytics
+    path = save_analytics(session_id, session.analytics)
+    return {"ok": True, "saved_to": os.path.relpath(path)}
 
 
 @app.get("/analytics/{session_id}")
 def get_analytics(session_id: str) -> dict:
+    record = load_analytics(session_id)
+    if record is not None:
+        return record["analytics"]
     session = get_session(session_id, create=False)
     if session is None or session.analytics is None:
         raise HTTPException(status_code=404, detail="Analytics not available yet. End the conversation first.")

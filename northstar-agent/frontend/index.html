@@ -174,11 +174,6 @@
     </div>
   </main>
 
-  <section id="analytics" aria-label="Conversation analytics" class="hidden shrink-0 bg-ink text-on-primary/80 font-mono text-xs leading-relaxed whitespace-pre-wrap overflow-y-auto max-h-80 mx-4 sm:mx-6 mb-3 rounded-lg p-4 shadow-[0px_2px_2px_rgb(0,0,0,0.06),0px_8px_16px_-4px_rgb(0,0,0,0.08)]">
-    <p class="text-cyan text-[11px] uppercase tracking-[0.16em] mb-2">Post-Conversation Analytics</p>
-    <span id="analyticsBody"></span>
-  </section>
-
   <footer class="shrink-0 bg-canvas border-t border-hairline">
     <form id="chatForm" class="max-w-3xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-2">
       <label for="message" class="sr-only">Message Huvo</label>
@@ -198,8 +193,6 @@
     const sendBtn = document.getElementById('sendBtn');
     const endBtn = document.getElementById('endBtn');
     const resetBtn = document.getElementById('resetBtn');
-    const analyticsEl = document.getElementById('analytics');
-    const analyticsBody = document.getElementById('analyticsBody');
     const contactPanel = document.getElementById('contactPanel');
     const contactBody = document.getElementById('contactBody');
 
@@ -313,19 +306,15 @@
       if (busy) return;
       busy = true;
       endBtn.disabled = true;
-      addMsg('Ending conversation and generating analytics…', 'system');
+      addMsg('Ending conversation and saving the summary…', 'system');
       try {
-        const res = await fetch('/end/' + sessionId, { method: 'POST' });
-        const data = await res.json();
-        analyticsBody.textContent = JSON.stringify(data, null, 2);
-        analyticsEl.classList.remove('hidden');
-        analyticsEl.style.display = 'flex';
+        await fetch('/end/' + sessionId, { method: 'POST' });
         document.getElementById('statusText').textContent = 'Ended';
         document.getElementById('statusDot').classList.remove('bg-cyan');
         document.getElementById('statusDot').classList.add('bg-warning');
-        addMsg('Conversation ended. Analytics are shown below.', 'system');
+        addMsg('Conversation ended. A summary has been saved on the backend.', 'system');
       } catch (err) {
-        addMsg('Could not generate analytics. Is the server running?', 'system');
+        addMsg('Could not save the conversation summary. Is the server running?', 'system');
       } finally {
         busy = false;
         endBtn.disabled = false;

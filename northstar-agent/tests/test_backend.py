@@ -4,7 +4,7 @@ import time
 import pytest
 from fastapi.testclient import TestClient
 
-from backend import agent, main, session_store
+from backend import agent, analytics_store, main, session_store
 from backend.constants import is_slot_available
 from backend.pii import has_contact, is_moderation_output, redact_line, scrub_contact
 from backend.session_store import Session
@@ -239,13 +239,18 @@ def test_booking_fallback_when_recheck_fails(client, monkeypatch):
     assert "representative will reach out" in res.json()["reply"]
 
 
-def test_end_conversation_sets_ended_and_analytics(client, monkeypatch):
+def test_end_conversation_sets_ended_and_saves_analytics(client, monkeypatch, tmp_path):
     fake = {"customer_name": "Rahul", "interest_level": "Hot"}
     monkeypatch.setattr(main, "generate_analytics", lambda s: fake)
+    monkeypatch.setattr(analytics_store, "ANALYTICS_DIR", str(tmp_path))
     res = client.post("/end/s1")
     assert res.status_code == 200
-    assert res.json() == fake
+    assert res.json()["ok"] is True
     assert session_store.get_session("s1").ended is True
+
+    saved = analytics_store.load_analytics("s1")
+    assert saved["session_id"] == "s1"
+    assert saved["analytics"] == fake
 
 
 def test_analytics_not_available_before_end(client):
@@ -253,12 +258,24 @@ def test_analytics_not_available_before_end(client):
     assert res.status_code == 404
 
 
-def test_analytics_available_after_end(client, monkeypatch):
+def test_analytics_available_after_end(client, monkeypatch, tmp_path):
     monkeypatch.setattr(main, "generate_analytics", lambda s: {"customer_name": "Rahul"})
+    monkeypatch.setattr(analytics_store, "ANALYTICS_DIR", str(tmp_path))
     client.post("/end/s1")
     res = client.get("/analytics/s1")
     assert res.status_code == 200
     assert res.json()["customer_name"] == "Rahul"
+
+
+def test_analytics_survive_session_restart(client, monkeypatch, tmp_path):
+    monkeypatch.setattr(main, "generate_analytics", lambda s: {"customer_name": "Priya"})
+    monkeypatch.setattr(analytics_store, "ANALYTICS_DIR", str(tmp_path))
+    client.post("/end/s1")
+    session_store.reset_session("s1")
+    assert session_store.get_session("s1", create=False) is None
+    res = client.get("/analytics/s1")
+    assert res.status_code == 200
+    assert res.json()["customer_name"] == "Priya"
 
 
 def test_reset(client):
