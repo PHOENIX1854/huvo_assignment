@@ -114,31 +114,69 @@
     })();
   </script>
 </head>
-<body class="h-dvh flex flex-col bg-canvas-soft text-ink font-sans antialiased">
+<body class="h-dvh flex flex-col md:flex-row bg-canvas-soft text-ink font-sans antialiased">
   <a href="#chat" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-canvas focus:text-ink focus:border focus:border-hairline focus:rounded-md focus:px-3 focus:py-2 focus:text-sm">Skip to chat</a>
   <h1 class="sr-only">Northstar One — Huvo, AI Sales Assistant</h1>
-  <header class="shrink-0 bg-canvas border-b border-hairline">
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
-      <div class="flex items-center gap-3 min-w-0">
+
+  <aside class="hidden md:flex md:w-64 shrink-0 flex-col bg-canvas border-r border-hairline">
+    <div class="p-3">
+      <button data-act="reset" class="w-full h-9 px-3 rounded-lg bg-canvas text-ink border border-hairline text-sm font-medium flex items-center gap-2 cursor-pointer hover:bg-canvas-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link transition-colors">
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+        New chat
+      </button>
+    </div>
+    <div class="px-3 pb-3">
+      <div class="flex items-center gap-2.5 rounded-lg px-2 py-2">
         <div class="h-8 w-8 shrink-0 rounded-lg bg-ink text-on-primary flex items-center justify-center select-none" aria-hidden="true">
-          <svg class="h-6 w-6" viewBox="0 0 1188 944" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg class="h-5 w-5" viewBox="0 0 1188 944" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M59.5291 2.0338C44.7291 4.96713 30.1957 13.1005 20.8624 23.3671C14.7291 30.1671 7.52906 42.7005 4.19572 52.5671L0.595725 63.3671L0.195725 468.034C-0.204275 920.967 -1.00428 881.767 9.66239 903.1C24.4624 932.967 53.7957 946.967 93.1291 942.967C165.929 935.634 245.262 885.634 299.796 812.834C326.196 777.634 336.996 758.834 376.729 679.634C409.262 614.7 419.396 596.034 434.596 573.367C472.729 516.434 521.396 479.634 572.062 469.367C590.462 465.634 598.729 465.9 612.862 470.834C649.796 483.634 687.529 511.234 721.129 550.034C751.262 584.834 774.996 618.167 814.862 682.034C824.062 696.7 834.196 712.834 837.396 718.034C909.796 833.634 979.796 902.034 1055.93 931.367C1092.06 945.367 1125.13 946.567 1149.26 934.967C1160.06 929.634 1173 916.167 1178.86 904.034C1188.6 883.9 1187.93 918.3 1187.93 472.167C1187.93 41.2338 1188.2 62.1671 1181.4 44.0338C1175.13 27.6338 1159.26 11.9005 1142.2 5.6338C1122.06 -1.9662 1095.93 -1.83287 1066.6 5.76713C1015.4 19.2338 961.396 50.4338 913.396 94.5671C870.596 133.9 843.396 173.234 798.862 260.167C778.996 298.967 764.329 325.767 753.129 343.9C714.596 405.9 667.796 446.3 619.262 459.367C600.196 464.567 589.662 463.9 573.662 456.167C529.796 435.1 490.996 393.5 443.262 316.7C400.196 247.234 373.262 205.634 359.396 187.367C311.662 123.767 260.996 77.3671 199.129 40.1671C146.996 8.56713 96.1957 -5.1662 59.5291 2.0338Z" fill="currentColor"/>
           </svg>
         </div>
-        <div class="min-w-0">
-          <div class="flex items-center gap-2">
-            <span class="text-sm font-semibold tracking-[-0.01em]" translate="no">Northstar One</span>
-            <span id="statusPill" class="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-mute bg-canvas-soft border border-hairline rounded-full px-2 py-0.5">
-              <span id="statusDot" class="h-1.5 w-1.5 rounded-full bg-cyan"></span>
-              <span id="statusText">Live</span>
-            </span>
-          </div>
-          <div class="font-mono text-[10px] uppercase tracking-[0.14em] text-mute truncate" aria-hidden="true">Huvo · AI Sales Agent · Sector 79</div>
+        <div class="min-w-0 leading-tight">
+          <span class="text-sm font-semibold tracking-[-0.01em] block truncate" translate="no">Northstar One</span>
+          <span class="font-mono text-[10px] uppercase tracking-[0.12em] text-mute flex items-center gap-1.5 mt-0.5">
+            <span class="status-dot h-1.5 w-1.5 rounded-full bg-cyan"></span>
+            <span class="status-text">Live</span>
+          </span>
         </div>
       </div>
-      <div class="flex items-center gap-2 shrink-0">
-        <button id="themeToggle" type="button" aria-label="Switch to dark mode"
-          class="h-7 w-7 rounded-full bg-canvas text-ink border border-hairline flex items-center justify-center cursor-pointer hover:bg-canvas-soft hover:border-hairline-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link transition-colors">
+      <p class="font-mono text-[10px] uppercase tracking-[0.14em] text-mute px-2 mt-2" aria-hidden="true">Huvo · AI Sales Agent · Sector 79</p>
+    </div>
+    <div class="mt-auto p-3 border-t border-hairline flex flex-col gap-2">
+      <button data-act="end" class="w-full h-9 px-3 rounded-lg bg-canvas text-ink border border-hairline text-sm font-medium cursor-pointer hover:bg-canvas-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link disabled:opacity-50 transition-colors">End Conversation</button>
+      <button data-act="theme" type="button" aria-label="Switch to dark mode"
+        class="w-full h-9 px-3 rounded-lg bg-canvas text-ink border border-hairline text-sm font-medium flex items-center justify-between cursor-pointer hover:bg-canvas-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link transition-colors">
+        <span>Theme</span>
+        <svg class="h-4 w-4 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+        </svg>
+        <svg class="h-4 w-4 hidden dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+        </svg>
+      </button>
+    </div>
+  </aside>
+
+  <header class="shrink-0 md:hidden bg-canvas border-b border-hairline">
+    <div class="px-3 sm:px-4 h-14 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="h-7 w-7 shrink-0 rounded-lg bg-ink text-on-primary flex items-center justify-center select-none" aria-hidden="true">
+          <svg class="h-4 w-4" viewBox="0 0 1188 944" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M59.5291 2.0338C44.7291 4.96713 30.1957 13.1005 20.8624 23.3671C14.7291 30.1671 7.52906 42.7005 4.19572 52.5671L0.595725 63.3671L0.195725 468.034C-0.204275 920.967 -1.00428 881.767 9.66239 903.1C24.4624 932.967 53.7957 946.967 93.1291 942.967C165.929 935.634 245.262 885.634 299.796 812.834C326.196 777.634 336.996 758.834 376.729 679.634C409.262 614.7 419.396 596.034 434.596 573.367C472.729 516.434 521.396 479.634 572.062 469.367C590.462 465.634 598.729 465.9 612.862 470.834C649.796 483.634 687.529 511.234 721.129 550.034C751.262 584.834 774.996 618.167 814.862 682.034C824.062 696.7 834.196 712.834 837.396 718.034C909.796 833.634 979.796 902.034 1055.93 931.367C1092.06 945.367 1125.13 946.567 1149.26 934.967C1160.06 929.634 1173 916.167 1178.86 904.034C1188.6 883.9 1187.93 918.3 1187.93 472.167C1187.93 41.2338 1188.2 62.1671 1181.4 44.0338C1175.13 27.6338 1159.26 11.9005 1142.2 5.6338C1122.06 -1.9662 1095.93 -1.83287 1066.6 5.76713C1015.4 19.2338 961.396 50.4338 913.396 94.5671C870.596 133.9 843.396 173.234 798.862 260.167C778.996 298.967 764.329 325.767 753.129 343.9C714.596 405.9 667.796 446.3 619.262 459.367C600.196 464.567 589.662 463.9 573.662 456.167C529.796 435.1 490.996 393.5 443.262 316.7C400.196 247.234 373.262 205.634 359.396 187.367C311.662 123.767 260.996 77.3671 199.129 40.1671C146.996 8.56713 96.1957 -5.1662 59.5291 2.0338Z" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="min-w-0 leading-tight">
+          <span class="text-sm font-semibold tracking-[-0.01em] block truncate" translate="no">Northstar One</span>
+          <span class="font-mono text-[10px] uppercase tracking-[0.12em] text-mute flex items-center gap-1.5">
+            <span class="status-dot h-1 w-1 rounded-full bg-cyan"></span>
+            <span class="status-text">Live</span>
+          </span>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button data-act="theme" type="button" aria-label="Switch to dark mode"
+          class="h-8 w-8 rounded-full bg-canvas text-ink border border-hairline flex items-center justify-center cursor-pointer hover:bg-canvas-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link transition-colors">
           <svg class="h-3.5 w-3.5 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="12" cy="12" r="4"></circle>
             <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
@@ -147,42 +185,47 @@
             <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
           </svg>
         </button>
-        <button id="endBtn" class="h-7 px-3 rounded-md bg-ink text-on-primary text-sm font-medium cursor-pointer hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link disabled:opacity-50">End Conversation</button>
-        <button id="resetBtn" class="h-7 px-3 rounded-md bg-canvas text-ink border border-hairline text-sm font-medium cursor-pointer hover:bg-canvas-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link">New Chat</button>
+        <button data-act="reset" class="h-8 px-2.5 rounded-md bg-canvas text-ink border border-hairline text-[13px] font-medium cursor-pointer hover:bg-canvas-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link">New chat</button>
+        <button data-act="end" class="h-8 px-2.5 rounded-md bg-ink text-on-primary text-[13px] font-medium cursor-pointer hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link disabled:opacity-50">End</button>
       </div>
     </div>
-    <div style="background: linear-gradient(90deg, #007cf0, #00dfd8, #7928ca, #ff0080, #ff4d4d, #f9cb28);" class="h-1 w-full" aria-hidden="true"></div>
   </header>
 
-  <section id="contactPanel" aria-label="Captured contact details" class="hidden shrink-0 bg-canvas border border-hairline rounded-lg mx-4 sm:mx-6 mt-3 p-3 font-mono text-xs leading-relaxed shadow-[0px_1px_1px_rgb(0,0,0,0.03),0px_2px_2px_rgb(0,0,0,0.04)]">
-    <p class="text-cyan text-[11px] uppercase tracking-[0.16em] mb-1">Captured Contact</p>
-    <span id="contactBody" class="text-body"></span>
-  </section>
-
-  <main id="chat" class="flex-1 overflow-y-auto overscroll-contain" aria-live="polite">
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 py-6 flex flex-col gap-4">
-      <div class="bg-canvas border border-hairline rounded-lg p-5 shadow-[0px_1px_1px_rgb(0,0,0,0.03),0px_2px_2px_rgb(0,0,0,0.04)] transition-all hover:border-hairline-strong hover:shadow-[0px_2px_2px_rgb(0,0,0,0.06),0px_12px_24px_-8px_rgba(121,40,202,0.15)]">
-        <p class="font-mono text-[11px] uppercase tracking-[0.14em] text-mute mb-1" translate="no">Project Northstar One · Sector 79, Gurugram</p>
-        <h2 class="text-xl font-semibold tracking-[-0.02em] text-balance mb-1">Talk to Huvo</h2>
-        <p class="text-sm text-body leading-relaxed mb-3">Your AI sales assistant for Northstar Homes. Ask anything about configurations and pricing — or book a site visit.</p>
-        <div class="flex flex-wrap gap-2">
-          <span class="inline-flex items-center font-mono text-[11px] text-body bg-canvas-soft border border-hairline rounded-full px-2.5 py-1">2 BHK · from ₹1.35&nbsp;Cr</span>
-          <span class="inline-flex items-center font-mono text-[11px] text-body bg-canvas-soft border border-hairline rounded-full px-2.5 py-1">3 BHK · from ₹1.75&nbsp;Cr</span>
-          <span class="inline-flex items-center font-mono text-[11px] text-body bg-canvas-soft border border-hairline rounded-full px-2.5 py-1">English · हिंदी · Hinglish</span>
+  <div class="flex-1 min-w-0 flex flex-col">
+    <main id="chat" class="flex-1 overflow-y-auto overscroll-contain" aria-live="polite">
+      <div class="max-w-3xl mx-auto px-4 sm:px-6 py-6 flex flex-col gap-6">
+        <div id="welcome" class="flex-1 flex flex-col items-center justify-center text-center py-14 gap-6">
+          <div class="h-12 w-12 rounded-xl bg-ink text-on-primary flex items-center justify-center select-none" aria-hidden="true">
+            <svg class="h-7 w-7" viewBox="0 0 1188 944" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M59.5291 2.0338C44.7291 4.96713 30.1957 13.1005 20.8624 23.3671C14.7291 30.1671 7.52906 42.7005 4.19572 52.5671L0.595725 63.3671L0.195725 468.034C-0.204275 920.967 -1.00428 881.767 9.66239 903.1C24.4624 932.967 53.7957 946.967 93.1291 942.967C165.929 935.634 245.262 885.634 299.796 812.834C326.196 777.634 336.996 758.834 376.729 679.634C409.262 614.7 419.396 596.034 434.596 573.367C472.729 516.434 521.396 479.634 572.062 469.367C590.462 465.634 598.729 465.9 612.862 470.834C649.796 483.634 687.529 511.234 721.129 550.034C751.262 584.834 774.996 618.167 814.862 682.034C824.062 696.7 834.196 712.834 837.396 718.034C909.796 833.634 979.796 902.034 1055.93 931.367C1092.06 945.367 1125.13 946.567 1149.26 934.967C1160.06 929.634 1173 916.167 1178.86 904.034C1188.6 883.9 1187.93 918.3 1187.93 472.167C1187.93 41.2338 1188.2 62.1671 1181.4 44.0338C1175.13 27.6338 1159.26 11.9005 1142.2 5.6338C1122.06 -1.9662 1095.93 -1.83287 1066.6 5.76713C1015.4 19.2338 961.396 50.4338 913.396 94.5671C870.596 133.9 843.396 173.234 798.862 260.167C778.996 298.967 764.329 325.767 753.129 343.9C714.596 405.9 667.796 446.3 619.262 459.367C600.196 464.567 589.662 463.9 573.662 456.167C529.796 435.1 490.996 393.5 443.262 316.7C400.196 247.234 373.262 205.634 359.396 187.367C311.662 123.767 260.996 77.3671 199.129 40.1671C146.996 8.56713 96.1957 -5.1662 59.5291 2.0338Z" fill="currentColor"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-2xl font-semibold tracking-[-0.02em] text-balance">How can I help you today?</h2>
+            <p class="text-sm text-body mt-1.5">Huvo, your AI sales assistant at Northstar Homes — pricing, configurations, site visits.</p>
+          </div>
+          <div class="flex flex-wrap justify-center gap-2 max-w-md">
+            <button type="button" data-q="What are the prices for the 2 BHK and 3 BHK homes?" class="inline-flex items-center px-3.5 py-2 rounded-full bg-canvas border border-hairline text-[13px] font-medium text-body cursor-pointer hover:bg-canvas-soft hover:border-hairline-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link transition-colors">2 BHK vs 3 BHK pricing</button>
+            <button type="button" data-q="I would like to book a site visit." class="inline-flex items-center px-3.5 py-2 rounded-full bg-canvas border border-hairline text-[13px] font-medium text-body cursor-pointer hover:bg-canvas-soft hover:border-hairline-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link transition-colors">Book a site visit</button>
+            <button type="button" data-q="What configurations are available?" class="inline-flex items-center px-3.5 py-2 rounded-full bg-canvas border border-hairline text-[13px] font-medium text-body cursor-pointer hover:bg-canvas-soft hover:border-hairline-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link transition-colors">Available configurations</button>
+          </div>
         </div>
       </div>
-    </div>
-  </main>
+    </main>
 
-  <footer class="shrink-0 bg-canvas border-t border-hairline">
-    <form id="chatForm" class="max-w-3xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-2">
-      <label for="message" class="sr-only">Message Huvo</label>
-      <input type="text" name="message" id="message" autocomplete="off" autofocus
-        class="flex-1 h-10 px-3 bg-canvas border border-hairline rounded-md text-sm placeholder:text-mute focus:outline-2 focus:outline-offset-0 focus:outline-link"
-        placeholder="Type a message in English, Hindi or Hinglish…">
-      <button type="submit" id="sendBtn" class="h-10 px-5 rounded-full bg-ink text-on-primary text-sm font-medium cursor-pointer hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link disabled:opacity-50 transition-all hover:shadow-[0_4px_16px_-2px_rgba(0,124,240,0.45),0_4px_16px_-2px_rgba(255,0,128,0.35)]">Send</button>
-    </form>
-  </footer>
+    <div class="shrink-0 px-4 sm:px-6 pb-4 pt-1">
+      <form id="chatForm" class="max-w-3xl mx-auto flex items-center gap-2 bg-canvas border border-hairline rounded-2xl px-3 py-2 shadow-[0px_1px_1px_rgb(0,0,0,0.03),0px_2px_2px_rgb(0,0,0,0.04)] focus-within:border-hairline-strong transition-colors">
+        <label for="message" class="sr-only">Message Huvo</label>
+        <input type="text" name="message" id="message" autocomplete="off" autofocus
+          class="flex-1 h-10 bg-transparent outline-none text-[15px] placeholder:text-mute"
+          placeholder="Message Huvo…">
+        <button type="submit" id="sendBtn" aria-label="Send message"
+          class="h-8 w-8 shrink-0 rounded-full bg-ink text-on-primary flex items-center justify-center cursor-pointer hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link disabled:opacity-30 disabled:cursor-default transition-opacity">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"></path></svg>
+        </button>
+      </form>
+    </div>
+  </div>
 
   <script>
     const sessionId = crypto.randomUUID();
@@ -191,37 +234,58 @@
     const form = document.getElementById('chatForm');
     const input = document.getElementById('message');
     const sendBtn = document.getElementById('sendBtn');
-    const endBtn = document.getElementById('endBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const contactPanel = document.getElementById('contactPanel');
-    const contactBody = document.getElementById('contactBody');
+    const statusTexts = document.querySelectorAll('.status-text');
+    const statusDots = document.querySelectorAll('.status-dot');
+    const themeToggles = document.querySelectorAll('[data-act="theme"]');
+    const endBtns = document.querySelectorAll('[data-act="end"]');
+    const resetBtns = document.querySelectorAll('[data-act="reset"]');
+    const welcomeEl = document.getElementById('welcome');
+
+    function setStatus(text, ended) {
+      statusTexts.forEach(t => t.textContent = text);
+      statusDots.forEach(d => {
+        d.classList.toggle('bg-cyan', !ended);
+        d.classList.toggle('bg-warning', ended);
+      });
+    }
 
     function showContact(contact, booking) {
       const parts = [];
       if (contact && contact.phone) parts.push('Phone: ' + contact.phone);
       if (contact && contact.email) parts.push('Email: ' + contact.email);
       if (booking && booking.datetime) parts.push('Visit: ' + booking.datetime);
-      if (parts.length) {
-        contactBody.textContent = parts.join('  ·  ');
-        contactPanel.classList.remove('hidden');
-      }
+      if (!parts.length) return;
+      const row = document.createElement('div');
+      row.className = 'flex justify-center';
+      const chip = document.createElement('div');
+      chip.className = 'inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-canvas border border-hairline font-mono text-[11px] text-body shadow-[0px_1px_1px_rgb(0,0,0,0.03),0px_2px_2px_rgb(0,0,0,0.04)]';
+      const label = document.createElement('span');
+      label.className = 'text-cyan uppercase tracking-[0.14em]';
+      label.textContent = 'Contact captured';
+      const text = document.createElement('span');
+      text.textContent = parts.join('  ·  ');
+      chip.append(label, text);
+      row.appendChild(chip);
+      chatStack.appendChild(row);
+      chatStack.scrollIntoView({ block: 'end', behavior: 'smooth' });
+      setTimeout(() => row.remove(), 2000);
     }
 
     let busy = false;
 
     function addMsg(text, who) {
       const row = document.createElement('div');
-      row.className = 'flex gap-3';
+      row.className = 'flex gap-3 items-start';
       if (who === 'user') {
         row.classList.add('justify-end');
       }
       const bubble = document.createElement('div');
-      bubble.className = 'max-w-[80%] px-4 py-3 text-[15px] leading-relaxed whitespace-pre-wrap break-words ' +
+      bubble.className = 'max-w-[80%] px-4 py-2.5 text-[15px] leading-relaxed whitespace-pre-wrap break-words ' +
         (who === 'user'
-          ? 'bg-ink text-on-primary rounded-lg rounded-br-sm'
+          ? 'bg-canvas-soft-2 text-ink rounded-2xl rounded-br-sm'
           : who === 'system'
-            ? 'bg-warning-soft border border-warning/40 text-body rounded-md'
-            : 'bg-canvas border border-hairline rounded-lg rounded-bl-sm shadow-[0px_1px_1px_rgb(0,0,0,0.03),0px_2px_2px_rgb(0,0,0,0.04)] hover:border-hairline-strong transition-colors');
+            ? 'bg-warning-soft border border-warning/40 text-body rounded-xl'
+            : 'flex-1 min-w-0 text-ink');
       bubble.textContent = text;
 
       if (who === 'bot') {
@@ -244,7 +308,7 @@
       avatar.setAttribute('aria-hidden', 'true');
       avatar.innerHTML = '<svg class="h-4.5 w-4.5" viewBox="0 0 1188 944" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M59.5291 2.0338C44.7291 4.96713 30.1957 13.1005 20.8624 23.3671C14.7291 30.1671 7.52906 42.7005 4.19572 52.5671L0.595725 63.3671L0.195725 468.034C-0.204275 920.967 -1.00428 881.767 9.66239 903.1C24.4624 932.967 53.7957 946.967 93.1291 942.967C165.929 935.634 245.262 885.634 299.796 812.834C326.196 777.634 336.996 758.834 376.729 679.634C409.262 614.7 419.396 596.034 434.596 573.367C472.729 516.434 521.396 479.634 572.062 469.367C590.462 465.634 598.729 465.9 612.862 470.834C649.796 483.634 687.529 511.234 721.129 550.034C751.262 584.834 774.996 618.167 814.862 682.034C824.062 696.7 834.196 712.834 837.396 718.034C909.796 833.634 979.796 902.034 1055.93 931.367C1092.06 945.367 1125.13 946.567 1149.26 934.967C1160.06 929.634 1173 916.167 1178.86 904.034C1188.6 883.9 1187.93 918.3 1187.93 472.167C1187.93 41.2338 1188.2 62.1671 1181.4 44.0338C1175.13 27.6338 1159.26 11.9005 1142.2 5.6338C1122.06 -1.9662 1095.93 -1.83287 1066.6 5.76713C1015.4 19.2338 961.396 50.4338 913.396 94.5671C870.596 133.9 843.396 173.234 798.862 260.167C778.996 298.967 764.329 325.767 753.129 343.9C714.596 405.9 667.796 446.3 619.262 459.367C600.196 464.567 589.662 463.9 573.662 456.167C529.796 435.1 490.996 393.5 443.262 316.7C400.196 247.234 373.262 205.634 359.396 187.367C311.662 123.767 260.996 77.3671 199.129 40.1671C146.996 8.56713 96.1957 -5.1662 59.5291 2.0338Z" fill="currentColor"/></svg>';
       const bubble = document.createElement('div');
-      bubble.className = 'bg-canvas border border-hairline rounded-lg rounded-bl-sm px-4 py-3 flex items-center gap-1';
+      bubble.className = 'px-4 py-3 flex items-center gap-1';
       bubble.setAttribute('aria-label', 'Huvo is typing');
       bubble.id = 'typing';
       for (let i = 0; i < 3; i++) {
@@ -267,6 +331,7 @@
       if (busy) return;
       busy = true;
       sendBtn.disabled = true;
+      if (welcomeEl) welcomeEl.classList.add('hidden');
       addMsg(text, 'user');
       addTyping();
       try {
@@ -302,45 +367,52 @@
       sendMessage(text);
     });
 
-    endBtn.addEventListener('click', async () => {
+    document.querySelectorAll('[data-q]').forEach(chip => {
+      chip.addEventListener('click', () => {
+        if (!busy) sendMessage(chip.dataset.q);
+      });
+    });
+
+    endBtns.forEach(endBtn => endBtn.addEventListener('click', async () => {
       if (busy) return;
       busy = true;
-      endBtn.disabled = true;
+      endBtns.forEach(b => b.disabled = true);
       addMsg('Ending conversation and saving the summary…', 'system');
       try {
         await fetch('/end/' + sessionId, { method: 'POST' });
-        document.getElementById('statusText').textContent = 'Ended';
-        document.getElementById('statusDot').classList.remove('bg-cyan');
-        document.getElementById('statusDot').classList.add('bg-warning');
+        setStatus('Ended', true);
         addMsg('Conversation ended. A summary has been saved on the backend.', 'system');
       } catch (err) {
         addMsg('Could not save the conversation summary. Is the server running?', 'system');
       } finally {
         busy = false;
-        endBtn.disabled = false;
+        endBtns.forEach(b => b.disabled = false);
       }
-    });
+    }));
 
-    resetBtn.addEventListener('click', async () => {
+    resetBtns.forEach(resetBtn => resetBtn.addEventListener('click', async () => {
       await fetch('/reset/' + sessionId, { method: 'POST' });
       location.reload();
-    });
+    }));
 
-    const themeToggle = document.getElementById('themeToggle');
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     const colorSchemeMeta = document.querySelector('meta[name="color-scheme"]');
     function applyTheme(dark) {
       document.documentElement.classList.toggle('dark', dark);
-      themeToggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
-      themeToggle.setAttribute('aria-pressed', String(dark));
+      themeToggles.forEach(t => {
+        t.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+        t.setAttribute('aria-pressed', String(dark));
+      });
       themeColorMeta.content = dark ? '#0a0a0a' : '#ffffff';
       colorSchemeMeta.content = dark ? 'dark' : 'light';
       try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch (e) {}
     }
-    themeToggle.addEventListener('click', () => applyTheme(!document.documentElement.classList.contains('dark')));
+    themeToggles.forEach(t => t.addEventListener('click', () => applyTheme(!document.documentElement.classList.contains('dark'))));
     const initialDark = document.documentElement.classList.contains('dark');
-    themeToggle.setAttribute('aria-label', initialDark ? 'Switch to light mode' : 'Switch to dark mode');
-    themeToggle.setAttribute('aria-pressed', String(initialDark));
+    themeToggles.forEach(t => {
+      t.setAttribute('aria-label', initialDark ? 'Switch to light mode' : 'Switch to dark mode');
+      t.setAttribute('aria-pressed', String(initialDark));
+    });
 
     addMsg('Hi! I\'m Huvo from Northstar Homes. How can I help you today — are you looking for a 2 BHK or 3 BHK home?', 'bot');
   </script>
