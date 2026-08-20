@@ -230,7 +230,17 @@
         <label for="message" class="sr-only">Message Huvo</label>
         <input type="text" name="message" id="message" autocomplete="off" autofocus
           class="flex-1 h-10 bg-transparent outline-none text-[15px] placeholder:text-mute"
-          placeholder="Message Huvo…">
+          placeholder="Message Huvo… or tap the mic to speak">
+        <button type="button" id="micBtn" aria-label="Speak your message" aria-pressed="false" title="Tap to speak"
+          class="relative h-8 w-8 shrink-0 rounded-full bg-canvas text-ink border border-hairline flex items-center justify-center cursor-pointer hover:bg-canvas-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link transition-colors disabled:opacity-30 disabled:cursor-default">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="23"></line>
+            <line x1="8" y1="23" x2="16" y2="23"></line>
+          </svg>
+          <span id="micDot" class="hidden absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-error animate-pulse" aria-hidden="true"></span>
+        </button>
         <button type="submit" id="sendBtn" aria-label="Send message"
           class="h-8 w-8 shrink-0 rounded-full bg-ink text-on-primary flex items-center justify-center cursor-pointer hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link disabled:opacity-30 disabled:cursor-default transition-opacity">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"></path></svg>
@@ -252,6 +262,66 @@
     const endBtns = document.querySelectorAll('[data-act="end"]');
     const resetBtns = document.querySelectorAll('[data-act="reset"]');
     const welcomeEl = document.getElementById('welcome');
+
+    const micBtn = document.getElementById('micBtn');
+    const micDot = document.getElementById('micDot');
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+    let listening = false;
+
+    function setMicUI(on) {
+      listening = on;
+      micBtn.setAttribute('aria-pressed', String(on));
+      micBtn.setAttribute('aria-label', on ? 'Stop speaking' : 'Speak your message');
+      micDot.classList.toggle('hidden', !on);
+      micBtn.classList.toggle('bg-error', on);
+      micBtn.classList.toggle('border-error', on);
+      micBtn.classList.toggle('text-on-primary', on);
+      micBtn.classList.toggle('bg-canvas', !on);
+      micBtn.classList.toggle('text-ink', !on);
+    }
+
+    function stopListening() {
+      if (recognition) {
+        recognition.onend = null;
+        try { recognition.stop(); } catch (e) {}
+        recognition = null;
+      }
+      setMicUI(false);
+    }
+
+    if (SpeechRecognition) {
+      micBtn.addEventListener('click', () => {
+        if (busy) return;
+        if (listening) { stopListening(); return; }
+        const rec = new SpeechRecognition();
+        rec.lang = 'en-IN';
+        rec.continuous = true;
+        rec.interimResults = true;
+        let finalText = '';
+        rec.onresult = (e) => {
+          let interim = '';
+          for (let i = e.resultIndex; i < e.results.length; i++) {
+            const t = e.results[i][0].transcript;
+            if (e.results[i].isFinal) finalText += t;
+            else interim += t;
+          }
+          input.value = finalText + interim;
+        };
+        rec.onerror = () => {
+          if (recognition === rec) { recognition = null; setMicUI(false); }
+        };
+        rec.onend = () => {
+          if (recognition === rec) { recognition = null; setMicUI(false); }
+          input.focus();
+        };
+        recognition = rec;
+        setMicUI(true);
+        try { rec.start(); } catch (e) { setMicUI(false); recognition = null; }
+      });
+    } else {
+      micBtn.classList.add('hidden');
+    }
 
     function setStatus(text, ended) {
       statusTexts.forEach(t => t.textContent = text);
@@ -342,7 +412,9 @@
     async function sendMessage(text) {
       if (busy) return;
       busy = true;
+      stopListening();
       sendBtn.disabled = true;
+      micBtn.disabled = true;
       if (welcomeEl) welcomeEl.classList.add('hidden');
       addMsg(text, 'user');
       addTyping();
@@ -367,6 +439,7 @@
       } finally {
         busy = false;
         sendBtn.disabled = false;
+        micBtn.disabled = false;
         input.focus();
       }
     }
