@@ -1,3 +1,4 @@
+import base64
 import os
 import re
 
@@ -13,6 +14,7 @@ from .analytics_store import load_analytics, save_analytics
 from .constants import BOOKING_ATTEMPT_PATTERN, is_slot_available
 from .pii import has_contact, is_moderation_output, redact_line, scrub_contact
 from .session_store import Session, cleanup_idle, get_session, reset_session
+from .stt import SttUnavailableError, transcribe_audio
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
 
@@ -218,6 +220,39 @@ def reset(session_id: str) -> dict:
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok"}
+
+
+class TranscribeRequest(BaseModel):
+    audio: str = Field(min_length=1)
+    format: str = "webm"
+
+
+@app.post("/transcribe")
+def transcribe(req: TranscribeRequest) -> dict:
+    try:
+        audio_bytes = base64.b64decode(req.audio)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid audio payload")
+    try:
+        text = transcribe_audio(audio_bytes, fmt=req.format)
+    except SttUnavailableError as exc:
+        if "no STT API key" in str(exc):
+            raise HTTPException(status_code=503, detail="Speech service is not configured on the server")
+        raise HTTPException(status_code=502, detail="Could not transcribe audio — try again")
+    except Exception as exc:
+        status = getattr(exc, "status_code", None)
+        if status == 401:
+            raise HTTPException(status_code=502, detail="Speech service key is invalid")
+        if status == 401:
+            raise HTTPException(status_code=502, detail="Speech service key is invalid")
+        if status == 402:
+            raise HTTPException(status_code=429, detail="Speech service credits exhausted — add credits or set GROQ_API_KEY")
+        if status == 429:
+            raise HTTPException(status_code=429, detail="Speech service rate limit reached — try again shortly")
+        if status is not None and status >= 500:
+            raise HTTPException(status_code=502, detail="Speech service is temporarily unavailable")
+        raise HTTPException(status_code=502, detail="Could not transcribe audio — try again")
+    return {"text": text}
 
 
 for _page in ("about", "privacy", "terms", "contact"):

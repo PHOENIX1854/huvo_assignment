@@ -84,6 +84,52 @@ def test_health(client):
     assert client.get("/health").json() == {"status": "ok"}
 
 
+def test_transcribe_returns_text(client, monkeypatch):
+    monkeypatch.setattr(main, "transcribe_audio", lambda b, fmt="webm": "hello there")
+    res = client.post("/transcribe", json={"audio": "aGVsbG8=", "format": "webm"})
+    assert res.status_code == 200
+    assert res.json() == {"text": "hello there"}
+
+
+def test_transcribe_rejects_bad_base64(client, monkeypatch):
+    monkeypatch.setattr(main, "transcribe_audio", lambda b, fmt="webm": "x")
+    res = client.post("/transcribe", json={"audio": "a", "format": "webm"})
+    assert res.status_code == 400
+
+
+def test_transcribe_maps_unconfigured_to_503(client, monkeypatch):
+    def raise_unconfigured(*a, **k):
+        raise main.SttUnavailableError("no STT API key configured")
+
+    monkeypatch.setattr(main, "transcribe_audio", raise_unconfigured)
+    res = client.post("/transcribe", json={"audio": "aGVsbG8=", "format": "webm"})
+    assert res.status_code == 503
+
+
+def test_transcribe_maps_upstream_error_to_502(client, monkeypatch):
+    class UpstreamError(Exception):
+        status_code = 500
+
+    def raise_upstream(*a, **k):
+        raise UpstreamError("upstream boom")
+
+    monkeypatch.setattr(main, "transcribe_audio", raise_upstream)
+    res = client.post("/transcribe", json={"audio": "aGVsbG8=", "format": "webm"})
+    assert res.status_code == 502
+
+
+def test_transcribe_maps_rate_limit_to_429(client, monkeypatch):
+    class RateError(Exception):
+        status_code = 429
+
+    def raise_rate(*a, **k):
+        raise RateError("limited")
+
+    monkeypatch.setattr(main, "transcribe_audio", raise_rate)
+    res = client.post("/transcribe", json={"audio": "aGVsbG8=", "format": "webm"})
+    assert res.status_code == 429
+
+
 def test_chat_returns_reply(client, monkeypatch):
     monkeypatch.setattr(main, "call_agent", lambda *a, **k: "Hello! How can I help?")
     res = client.post("/chat", json={"session_id": "s1", "message": "hi"})
