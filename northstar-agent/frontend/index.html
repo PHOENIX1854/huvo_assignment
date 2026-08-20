@@ -8,25 +8,65 @@
   <title>Northstar One — Aria, your sales assistant</title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <style type="text/tailwindcss">
+    @custom-variant dark (&:where(.dark, .dark *));
+
     @theme {
-      --color-ink: #171717;
-      --color-on-primary: #ffffff;
-      --color-body: #4d4d4d;
-      --color-mute: #888888;
-      --color-hairline: #ebebeb;
-      --color-hairline-strong: #a1a1a1;
-      --color-canvas: #ffffff;
-      --color-canvas-soft: #fafafa;
-      --color-canvas-soft-2: #f5f5f5;
-      --color-link: #0070f3;
-      --color-link-deep: #0761d1;
-      --color-error: #ee0000;
-      --color-error-soft: #f7d4d6;
-      --color-warning: #f5a623;
-      --color-warning-soft: #ffefcf;
-      --color-cyan: #50e3c2;
+      --color-ink: var(--ink);
+      --color-on-primary: var(--on-primary);
+      --color-body: var(--body);
+      --color-mute: var(--mute);
+      --color-hairline: var(--hairline);
+      --color-hairline-strong: var(--hairline-strong);
+      --color-canvas: var(--canvas);
+      --color-canvas-soft: var(--canvas-soft);
+      --color-canvas-soft-2: var(--canvas-soft-2);
+      --color-link: var(--link);
+      --color-link-deep: var(--link-deep);
+      --color-error: var(--error);
+      --color-error-soft: var(--error-soft);
+      --color-warning: var(--warning);
+      --color-warning-soft: var(--warning-soft);
+      --color-cyan: var(--cyan);
       --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
       --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+    }
+
+    :root {
+      --ink: #171717;
+      --on-primary: #ffffff;
+      --body: #4d4d4d;
+      --mute: #888888;
+      --hairline: #ebebeb;
+      --hairline-strong: #a1a1a1;
+      --canvas: #ffffff;
+      --canvas-soft: #fafafa;
+      --canvas-soft-2: #f5f5f5;
+      --link: #0070f3;
+      --link-deep: #0761d1;
+      --error: #ee0000;
+      --error-soft: #f7d4d6;
+      --warning: #f5a623;
+      --warning-soft: #ffefcf;
+      --cyan: #50e3c2;
+    }
+
+    .dark {
+      --ink: #ededed;
+      --on-primary: #171717;
+      --body: #a1a1a1;
+      --mute: #666666;
+      --hairline: #2a2a2a;
+      --hairline-strong: #5c5c5c;
+      --canvas: #0a0a0a;
+      --canvas-soft: #111111;
+      --canvas-soft-2: #1a1a1a;
+      --link: #3291ff;
+      --link-deep: #0070f3;
+      --error: #f33535;
+      --error-soft: #4a1212;
+      --warning: #f5a623;
+      --warning-soft: #33280f;
+      --cyan: #79ffe1;
     }
   </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,11 +78,41 @@
     .dot:nth-child(2) { animation-delay: .15s; }
     .dot:nth-child(3) { animation-delay: .3s; }
     button, input { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+    body {
+      background-color: var(--canvas-soft);
+      background-image:
+        radial-gradient(1000px 600px at 12% -10%, rgba(0, 124, 240, 0.18), transparent 62%),
+        radial-gradient(900px 540px at 90% -15%, rgba(0, 223, 216, 0.16), transparent 62%),
+        radial-gradient(1000px 600px at 80% 115%, rgba(121, 40, 202, 0.14), transparent 62%),
+        radial-gradient(800px 480px at 5% 112%, rgba(255, 0, 128, 0.12), transparent 62%);
+      background-attachment: fixed;
+    }
+    .dark body {
+      background-image:
+        radial-gradient(1000px 600px at 12% -10%, rgba(0, 124, 240, 0.10), transparent 62%),
+        radial-gradient(900px 540px at 90% -15%, rgba(0, 223, 216, 0.08), transparent 62%),
+        radial-gradient(1000px 600px at 80% 115%, rgba(121, 40, 202, 0.10), transparent 62%),
+        radial-gradient(800px 480px at 5% 112%, rgba(255, 0, 128, 0.08), transparent 62%);
+    }
+    ::selection { background: var(--ink); color: var(--on-primary); }
     @media (prefers-reduced-motion: reduce) {
       .dot { animation: none; }
       * { transition: none !important; }
     }
   </style>
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('theme');
+        var dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (dark) {
+          document.documentElement.classList.add('dark');
+          document.querySelector('meta[name="color-scheme"]').content = 'dark';
+          document.querySelector('meta[name="theme-color"]').content = '#0a0a0a';
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body class="h-dvh flex flex-col bg-canvas-soft text-ink font-sans antialiased">
   <a href="#chat" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-canvas focus:text-ink focus:border focus:border-hairline focus:rounded-md focus:px-3 focus:py-2 focus:text-sm">Skip to chat</a>
@@ -63,6 +133,16 @@
         </div>
       </div>
       <div class="flex items-center gap-2 shrink-0">
+        <button id="themeToggle" type="button" aria-label="Switch to dark mode"
+          class="h-7 w-7 rounded-full bg-canvas text-ink border border-hairline flex items-center justify-center cursor-pointer hover:bg-canvas-soft hover:border-hairline-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link transition-colors">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+          </svg>
+          <svg class="h-3.5 w-3.5 hidden dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+          </svg>
+        </button>
         <button id="endBtn" class="h-7 px-3 rounded-md bg-ink text-on-primary text-sm font-medium cursor-pointer hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link disabled:opacity-50">End Conversation</button>
         <button id="resetBtn" class="h-7 px-3 rounded-md bg-canvas text-ink border border-hairline text-sm font-medium cursor-pointer hover:bg-canvas-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link">New Chat</button>
       </div>
@@ -72,7 +152,7 @@
 
   <main id="chat" class="flex-1 overflow-y-auto overscroll-contain" aria-live="polite">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 py-6 flex flex-col gap-4">
-      <div class="bg-canvas border border-hairline rounded-lg p-5 shadow-[0px_1px_1px_rgb(0,0,0,0.03),0px_2px_2px_rgb(0,0,0,0.04)]">
+      <div class="bg-canvas border border-hairline rounded-lg p-5 shadow-[0px_1px_1px_rgb(0,0,0,0.03),0px_2px_2px_rgb(0,0,0,0.04)] transition-all hover:border-hairline-strong hover:shadow-[0px_2px_2px_rgb(0,0,0,0.06),0px_12px_24px_-8px_rgba(121,40,202,0.15)]">
         <p class="font-mono text-[11px] uppercase tracking-[0.14em] text-mute mb-1" translate="no">Project Northstar One · Sector 79, Gurugram</p>
         <h2 class="text-xl font-semibold tracking-[-0.02em] text-balance mb-1">Talk to Aria</h2>
         <p class="text-sm text-body leading-relaxed mb-3">Your AI sales assistant for Northstar Homes. Ask anything about configurations and pricing — or book a site visit.</p>
@@ -96,7 +176,7 @@
       <input type="text" name="message" id="message" autocomplete="off" autofocus
         class="flex-1 h-10 px-3 bg-canvas border border-hairline rounded-md text-sm placeholder:text-mute focus:outline-2 focus:outline-offset-0 focus:outline-link"
         placeholder="Type a message in English, Hindi or Hinglish…">
-      <button type="submit" id="sendBtn" class="h-10 px-5 rounded-full bg-ink text-on-primary text-sm font-medium cursor-pointer hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link disabled:opacity-50">Send</button>
+      <button type="submit" id="sendBtn" class="h-10 px-5 rounded-full bg-ink text-on-primary text-sm font-medium cursor-pointer hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link disabled:opacity-50 transition-all hover:shadow-[0_4px_16px_-2px_rgba(0,124,240,0.45),0_4px_16px_-2px_rgba(255,0,128,0.35)]">Send</button>
     </form>
   </footer>
 
@@ -126,7 +206,7 @@
           ? 'bg-ink text-on-primary rounded-lg rounded-br-sm'
           : who === 'system'
             ? 'bg-warning-soft border border-warning/40 text-body rounded-md'
-            : 'bg-canvas border border-hairline rounded-lg rounded-bl-sm shadow-[0px_1px_1px_rgb(0,0,0,0.03),0px_2px_2px_rgb(0,0,0,0.04)]');
+            : 'bg-canvas border border-hairline rounded-lg rounded-bl-sm shadow-[0px_1px_1px_rgb(0,0,0,0.03),0px_2px_2px_rgb(0,0,0,0.04)] hover:border-hairline-strong transition-colors');
       bubble.textContent = text;
 
       if (who === 'bot') {
@@ -233,6 +313,22 @@
       await fetch('/reset/' + sessionId, { method: 'POST' });
       location.reload();
     });
+
+    const themeToggle = document.getElementById('themeToggle');
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    const colorSchemeMeta = document.querySelector('meta[name="color-scheme"]');
+    function applyTheme(dark) {
+      document.documentElement.classList.toggle('dark', dark);
+      themeToggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+      themeToggle.setAttribute('aria-pressed', String(dark));
+      themeColorMeta.content = dark ? '#0a0a0a' : '#ffffff';
+      colorSchemeMeta.content = dark ? 'dark' : 'light';
+      try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch (e) {}
+    }
+    themeToggle.addEventListener('click', () => applyTheme(!document.documentElement.classList.contains('dark')));
+    const initialDark = document.documentElement.classList.contains('dark');
+    themeToggle.setAttribute('aria-label', initialDark ? 'Switch to light mode' : 'Switch to dark mode');
+    themeToggle.setAttribute('aria-pressed', String(initialDark));
 
     addMsg('Hi! I\'m Aria from Northstar Homes. How can I help you today — are you looking for a 2 BHK or 3 BHK home?', 'bot');
   </script>
