@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#ffffff">
+  <title>Contact Us — Northstar One</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @custom-variant dark (&:where(.dark, .dark *));
+
+    @theme {
+      --color-ink: var(--ink);
+      --color-on-primary: var(--on-primary);
+      --color-body: var(--body);
+      --color-mute: var(--mute);
+      --color-hairline: var(--hairline);
+      --color-hairline-strong: var(--hairline-strong);
+      --color-canvas: var(--canvas);
+      --color-canvas-soft: var(--canvas-soft);
+      --color-canvas-soft-2: var(--canvas-soft-2);
+      --color-link: var(--link);
+      --color-link-deep: var(--link-deep);
+      --color-error: var(--error);
+      --color-error-soft: var(--error-soft);
+      --color-warning: var(--warning);
+      --color-warning-soft: var(--warning-soft);
+      --color-cyan: var(--cyan);
+      --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+    }
+
+    :root {
+      --ink: #171717;
+      --on-primary: #ffffff;
+      --body: #4d4d4d;
+      --mute: #888888;
+      --hairline: #ebebeb;
+      --hairline-strong: #a1a1a1;
+      --canvas: #ffffff;
+      --canvas-soft: #fafafa;
+      --canvas-soft-2: #f5f5f5;
+      --link: #0070f3;
+      --link-deep: #0761d1;
+      --error: #ee0000;
+      --error-soft: #f7d4d6;
+      --warning: #f5a623;
+      --warning-soft: #ffefcf;
+      --cyan: #50e3c2;
+    }
+
+    .dark {
+      --ink: #ededed;
+      --on-primary: #171717;
+      --body: #a1a1a1;
+      --mute: #666666;
+      --hairline: #2a2a2a;
+      --hairline-strong: #5c5c5c;
+      --canvas: #0a0a0a;
+      --canvas-soft: #111111;
+      --canvas-soft-2: #1a1a1a;
+      --link: #3291ff;
+      --link-deep: #0070f3;
+      --error: #f33535;
+      --error-soft: #4a1212;
+      --warning: #f5a623;
+      --warning-soft: #33280f;
+      --cyan: #79ffe1;
+    }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background-color: var(--canvas-soft);
+      background-image:
+        radial-gradient(1000px 600px at 12% -10%, rgba(0, 124, 240, 0.18), transparent 62%),
+        radial-gradient(900px 540px at 90% -15%, rgba(0, 223, 216, 0.16), transparent 62%),
+        radial-gradient(1000px 600px at 80% 115%, rgba(121, 40, 202, 0.14), transparent 62%),
+        radial-gradient(800px 480px at 5% 112%, rgba(255, 0, 128, 0.12), transparent 62%);
+      background-attachment: fixed;
+    }
+    .dark body {
+      background-image:
+        radial-gradient(1000px 600px at 12% -10%, rgba(0, 124, 240, 0.10), transparent 62%),
+        radial-gradient(900px 540px at 90% -15%, rgba(0, 223, 216, 0.08), transparent 62%),
+        radial-gradient(1000px 600px at 80% 115%, rgba(121, 40, 202, 0.10), transparent 62%),
+        radial-gradient(800px 480px at 5% 112%, rgba(255, 0, 128, 0.08), transparent 62%);
+    }
+    ::selection { background: var(--ink); color: var(--on-primary); }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
+    }
+  </style>
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('theme');
+        var dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (dark) {
+          document.documentElement.classList.add('dark');
+          document.querySelector('meta[name="color-scheme"]').content = 'dark';
+          document.querySelector('meta[name="theme-color"]').content = '#0a0a0a';
+        }
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body class="min-h-dvh flex flex-col bg-canvas-soft text-ink font-sans antialiased">
+  <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-canvas focus:text-ink focus:border focus:border-hairline focus:rounded-md focus:px-3 focus:py-2 focus:text-sm">Skip to content</a>
+  <header class="shrink-0 bg-canvas border-b border-hairline">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+      <a href="/" class="flex items-center gap-2.5 min-w-0 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link" aria-label="Northstar One — back to chat">
+        <div class="h-8 w-8 shrink-0 rounded-lg bg-ink text-on-primary flex items-center justify-center select-none" aria-hidden="true">
+          <svg class="h-5 w-5" viewBox="0 0 1188 944" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M59.5291 2.0338C44.7291 4.96713 30.1957 13.1005 20.8624 23.3671C14.7291 30.1671 7.52906 42.7005 4.19572 52.5671L0.595725 63.3671L0.195725 468.034C-0.204275 920.967 -1.00428 881.767 9.66239 903.1C24.4624 932.967 53.7957 946.967 93.1291 942.967C165.929 935.634 245.262 885.634 299.796 812.834C326.196 777.634 336.996 758.834 376.729 679.634C409.262 614.7 419.396 596.034 434.596 573.367C472.729 516.434 521.396 479.634 572.062 469.367C590.462 465.634 598.729 465.9 612.862 470.834C649.796 483.634 687.529 511.234 721.129 550.034C751.262 584.834 774.996 618.167 814.862 682.034C824.062 696.7 834.196 712.834 837.396 718.034C909.796 833.634 979.796 902.034 1055.93 931.367C1092.06 945.367 1125.13 946.567 1149.26 934.967C1160.06 929.634 1173 916.167 1178.86 904.034C1188.6 883.9 1187.93 918.3 1187.93 472.167C1187.93 41.2338 1188.2 62.1671 1181.4 44.0338C1175.13 27.6338 1159.26 11.9005 1142.2 5.6338C1122.06 -1.9662 1095.93 -1.83287 1066.6 5.76713C1015.4 19.2338 961.396 50.4338 913.396 94.5671C870.596 133.9 843.396 173.234 798.862 260.167C778.996 298.967 764.329 325.767 753.129 343.9C714.596 405.9 667.796 446.3 619.262 459.367C600.196 464.567 589.662 463.9 573.662 456.167C529.796 435.1 490.996 393.5 443.262 316.7C400.196 247.234 373.262 205.634 359.396 187.367C311.662 123.767 260.996 77.3671 199.129 40.1671C146.996 8.56713 96.1957 -5.1662 59.5291 2.0338Z" fill="currentColor"/>
+          </svg>
+        </div>
+        <span class="text-sm font-semibold tracking-[-0.01em]" translate="no">Northstar One</span>
+      </a>
+      <nav class="flex items-center gap-1 min-w-0 overflow-x-auto" aria-label="Site">
+        <a href="/about" class="shrink-0 px-2.5 py-1.5 rounded-full text-body text-sm hover:bg-canvas-soft hover:text-ink transition-colors">About</a>
+        <a href="/privacy" class="shrink-0 px-2.5 py-1.5 rounded-full text-body text-sm hover:bg-canvas-soft hover:text-ink transition-colors">Privacy</a>
+        <a href="/terms" class="shrink-0 px-2.5 py-1.5 rounded-full text-body text-sm hover:bg-canvas-soft hover:text-ink transition-colors">Terms</a>
+        <a href="/contact" class="shrink-0 px-2.5 py-1.5 rounded-full bg-canvas-soft text-ink text-sm font-medium" aria-current="page">Contact</a>
+      </nav>
+      <a href="/" class="shrink-0 h-8 px-3.5 rounded-md bg-ink text-on-primary text-sm font-medium flex items-center cursor-pointer hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link transition-opacity">Chat with Huvo</a>
+    </div>
+  </header>
+
+  <main id="main" class="flex-1">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+      <p class="font-mono text-[11px] uppercase tracking-[0.14em] text-mute mb-3" translate="no">Contact Us · Northstar One</p>
+      <h1 class="text-3xl sm:text-4xl font-semibold tracking-[-0.02em] text-balance mb-4">Talk to a human.</h1>
+      <p class="text-base sm:text-lg text-body leading-relaxed mb-10">Huvo handles the day-to-day questions, but the Northstar sales team is always a message away. Reach out any way you like.</p>
+
+      <div class="grid gap-4 sm:grid-cols-2 mb-10">
+        <div class="bg-canvas border border-hairline rounded-lg p-5 shadow-[0px_1px_1px_rgb(0,0,0,0.03),0px_2px_2px_rgb(0,0,0,0.04)]">
+          <p class="font-mono text-[11px] uppercase tracking-[0.14em] text-cyan mb-1.5">Sales office</p>
+          <p class="text-sm text-body leading-relaxed">Northstar One, Sector 79<br>Gurugram, Haryana 122004<br>Open 10:00 — 19:00, all days</p>
+        </div>
+        <div class="bg-canvas border border-hairline rounded-lg p-5 shadow-[0px_1px_1px_rgb(0,0,0,0.03),0px_2px_2px_rgb(0,0,0,0.04)]">
+          <p class="font-mono text-[11px] uppercase tracking-[0.14em] text-cyan mb-1.5">Email</p>
+          <p class="text-sm text-body leading-relaxed mb-3">For sales and visits:<br><a href="mailto:sales@northstar-one.in" class="text-link hover:text-link-deep underline decoration-hairline-strong underline-offset-2">sales@northstar-one.in</a></p>
+          <p class="text-sm text-body leading-relaxed">For privacy or anything else:<br><a href="mailto:care@northstar-one.in" class="text-link hover:text-link-deep underline decoration-hairline-strong underline-offset-2">care@northstar-one.in</a></p>
+        </div>
+        <div class="bg-canvas border border-hairline rounded-lg p-5 shadow-[0px_1px_1px_rgb(0,0,0,0.03),0px_2px_2px_rgb(0,0,0,0.04)]">
+          <p class="font-mono text-[11px] uppercase tracking-[0.14em] text-cyan mb-1.5">Phone</p>
+          <p class="text-sm text-body leading-relaxed mb-3">Sales line:<br><a href="tel:+911244567890" class="text-link hover:text-link-deep underline decoration-hairline-strong underline-offset-2">+91 124 456 7890</a></p>
+          <p class="text-sm text-body leading-relaxed">Prefer WhatsApp? Send us a message on the same number.</p>
+        </div>
+        <div class="bg-canvas border border-hairline rounded-lg p-5 shadow-[0px_1px_1px_rgb(0,0,0,0.03),0px_2px_2px_rgb(0,0,0,0.04)]">
+          <p class="font-mono text-[11px] uppercase tracking-[0.14em] text-cyan mb-1.5">Fastest route</p>
+          <p class="text-sm text-body leading-relaxed mb-3">Ask Huvo in the chat — pricing, configurations, or a site visit booking, in English, हिंदी or Hinglish.</p>
+          <a href="/" class="inline-flex h-8 px-4 rounded-full bg-ink text-on-primary text-sm font-medium items-center cursor-pointer hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link transition-opacity">Chat with Huvo</a>
+        </div>
+      </div>
+
+      <div class="bg-canvas border border-hairline rounded-lg p-6 shadow-[0px_1px_1px_rgb(0,0,0,0.03),0px_2px_2px_rgb(0,0,0,0.04)]">
+        <p class="font-mono text-[11px] uppercase tracking-[0.14em] text-cyan mb-2">Response times</p>
+        <p class="text-sm text-body leading-relaxed">Email and phone messages are answered within one business day. Site visit requests made through Huvo are confirmed by the team within a few hours.</p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="shrink-0 bg-canvas border-t border-hairline">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p class="font-mono text-[11px] uppercase tracking-[0.12em] text-mute" translate="no">© 2026 Northstar Homes · Northstar One, Sector 79</p>
+      <nav class="flex items-center gap-1" aria-label="Footer">
+        <a href="/about" class="px-2.5 py-1.5 rounded-md text-[13px] text-body hover:bg-canvas-soft hover:text-ink transition-colors">About</a>
+        <a href="/privacy" class="px-2.5 py-1.5 rounded-md text-[13px] text-body hover:bg-canvas-soft hover:text-ink transition-colors">Privacy</a>
+        <a href="/terms" class="px-2.5 py-1.5 rounded-md text-[13px] text-body hover:bg-canvas-soft hover:text-ink transition-colors">Terms</a>
+        <a href="/contact" class="px-2.5 py-1.5 rounded-md text-[13px] text-body hover:bg-canvas-soft hover:text-ink transition-colors">Contact</a>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>

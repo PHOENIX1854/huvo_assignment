@@ -3,6 +3,7 @@ import re
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -217,6 +218,20 @@ def reset(session_id: str) -> dict:
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok"}
+
+
+for _page in ("about", "privacy", "terms", "contact"):
+
+    def _serve_page(page: str = _page) -> FileResponse:
+        return FileResponse(os.path.join(FRONTEND_DIR, f"{page}.html"))
+
+    app.add_api_route(
+        f"/{_page}",
+        _serve_page,
+        methods=["GET"],
+        include_in_schema=False,
+        name=_page,
+    )
 
 
 app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
