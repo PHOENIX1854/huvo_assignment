@@ -1,5 +1,6 @@
 import io
 import os
+import re
 from functools import lru_cache
 
 from openai import OpenAI
@@ -38,5 +39,9 @@ def transcribe_audio(audio_bytes: bytes, fmt: str = "webm") -> str:
     )
     text = (response.text or "").strip()
     if not text:
+        raise SttUnavailableError("empty transcription")
+    # Filter out common Whisper silence hallucinations
+    cleaned = re.sub(r"[^\w]", "", text.lower())
+    if cleaned in ("thankyou", "thankyouverymuch", "thankyouforwatching", "pleasesubscribe", "you", "go"):
         raise SttUnavailableError("empty transcription")
     return text

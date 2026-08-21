@@ -47,11 +47,11 @@ def handoff_reply(session: Session) -> str:
         return (
             "Thanks! I've noted your details — a Northstar representative will call or WhatsApp "
             f"you shortly to confirm your visit for {session.site_visit_datetime}. "
-            "Anything else I can help with?"
+            "Anything else I can help with? If nothing then please click on End Conversation."
         )
     return (
         "Thanks! I've noted your details — a Northstar representative will reach out shortly "
-        "to help with your request. Anything else I can help with?"
+        "to help with your request. Anything else I can help with? If nothing then please click on End Conversation."
     )
 
 
@@ -166,6 +166,7 @@ def chat(req: ChatRequest) -> dict:
         first_failure = not session.model_failed
         try:
             reply = call_agent(build_system_prompt(session=session), session.history)
+            print(f"DEBUG: Raw reply: {repr(reply)}")
             session.model_failed = False
         except Exception:
             session.model_failed = True

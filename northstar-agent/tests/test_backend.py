@@ -533,6 +533,7 @@ def test_chat_contact_handoff_references_booked_slot(client):
     session.site_visit_datetime = f"{FUTURE} 10:30"
     res = client.post("/chat", json={"session_id": "s1", "message": "my number is 9876543210"})
     assert f"confirm your visit for {FUTURE} 10:30" in res.json()["reply"]
+    assert "If nothing then please click on End Conversation." in res.json()["reply"]
 
 
 def test_chat_filters_moderation_output(client, monkeypatch):

@@ -6,7 +6,7 @@ _PHONE_RE = re.compile(
 _EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
 
 _MODERATION_RE = re.compile(
-    r"(?m)^\s*(User Safety|Response Safety|Safety Categories|Safety)\s*:",
+    r"(?m)^\s*(User Safety\s*:|Response Safety\s*:|Safety Categories\s*:|Safety\s*:\s*(?:unsafe|flagged|blocked|harmful|restricted|violation|pii))",
     re.IGNORECASE,
 )
 

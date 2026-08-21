@@ -149,7 +149,6 @@
       <a href="/contact" class="px-2 py-1 rounded-md font-mono text-[10px] uppercase tracking-[0.1em] text-mute hover:text-ink hover:bg-canvas-soft transition-colors">Contact</a>
     </nav>
     <div class="mt-auto p-3 border-t border-hairline flex flex-col gap-2">
-      <button data-act="end" class="w-full h-9 px-3 rounded-lg bg-canvas text-ink border border-hairline text-sm font-medium cursor-pointer hover:bg-canvas-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link disabled:opacity-50 transition-colors">End Conversation</button>
       <button data-act="theme" type="button" aria-label="Switch to dark mode"
         class="w-full h-9 px-3 rounded-lg bg-canvas text-ink border border-hairline text-sm font-medium flex items-center justify-between cursor-pointer hover:bg-canvas-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link transition-colors">
         <span>Theme</span>
@@ -192,7 +191,6 @@
           </svg>
         </button>
         <button data-act="reset" class="h-8 px-2.5 rounded-md bg-canvas text-ink border border-hairline text-[13px] font-medium cursor-pointer hover:bg-canvas-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link">New chat</button>
-        <button data-act="end" class="h-8 px-2.5 rounded-md bg-ink text-on-primary text-[13px] font-medium cursor-pointer hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link disabled:opacity-50">End</button>
       </div>
     </div>
   </header>
@@ -260,7 +258,7 @@
     const statusTexts = document.querySelectorAll('.status-text');
     const statusDots = document.querySelectorAll('.status-dot');
     const themeToggles = document.querySelectorAll('[data-act="theme"]');
-    const endBtns = document.querySelectorAll('[data-act="end"]');
+    // No static end buttons on load
     const resetBtns = document.querySelectorAll('[data-act="reset"]');
     const welcomeEl = document.getElementById('welcome');
 
@@ -280,7 +278,7 @@
     let procNode = null;
     let lastVoiceAt = 0;
     let voicedOnce = false;
-    const VOICE_RMS = 0.015;
+    const VOICE_RMS = 0.005;
     const SILENCE_MS = 2500;
     const micSupported = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
 
@@ -531,6 +529,18 @@
         avatar.setAttribute('aria-hidden', 'true');
         avatar.innerHTML = '<svg class="h-4.5 w-4.5" viewBox="0 0 1188 944" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M59.5291 2.0338C44.7291 4.96713 30.1957 13.1005 20.8624 23.3671C14.7291 30.1671 7.52906 42.7005 4.19572 52.5671L0.595725 63.3671L0.195725 468.034C-0.204275 920.967 -1.00428 881.767 9.66239 903.1C24.4624 932.967 53.7957 946.967 93.1291 942.967C165.929 935.634 245.262 885.634 299.796 812.834C326.196 777.634 336.996 758.834 376.729 679.634C409.262 614.7 419.396 596.034 434.596 573.367C472.729 516.434 521.396 479.634 572.062 469.367C590.462 465.634 598.729 465.9 612.862 470.834C649.796 483.634 687.529 511.234 721.129 550.034C751.262 584.834 774.996 618.167 814.862 682.034C824.062 696.7 834.196 712.834 837.396 718.034C909.796 833.634 979.796 902.034 1055.93 931.367C1092.06 945.367 1125.13 946.567 1149.26 934.967C1160.06 929.634 1173 916.167 1178.86 904.034C1188.6 883.9 1187.93 918.3 1187.93 472.167C1187.93 41.2338 1188.2 62.1671 1181.4 44.0338C1175.13 27.6338 1159.26 11.9005 1142.2 5.6338C1122.06 -1.9662 1095.93 -1.83287 1066.6 5.76713C1015.4 19.2338 961.396 50.4338 913.396 94.5671C870.596 133.9 843.396 173.234 798.862 260.167C778.996 298.967 764.329 325.767 753.129 343.9C714.596 405.9 667.796 446.3 619.262 459.367C600.196 464.567 589.662 463.9 573.662 456.167C529.796 435.1 490.996 393.5 443.262 316.7C400.196 247.234 373.262 205.634 359.396 187.367C311.662 123.767 260.996 77.3671 199.129 40.1671C146.996 8.56713 96.1957 -5.1662 59.5291 2.0338Z" fill="currentColor"/></svg>';
         row.appendChild(avatar);
+
+        if (text.includes("please click on End Conversation")) {
+          const btnDiv = document.createElement('div');
+          btnDiv.className = 'mt-3';
+          const inlineEndBtn = document.createElement('button');
+          inlineEndBtn.setAttribute('data-act', 'end');
+          inlineEndBtn.className = 'px-4 h-9 rounded-lg bg-ink text-on-primary text-sm font-medium cursor-pointer hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link disabled:opacity-50 transition-opacity';
+          inlineEndBtn.textContent = 'End Conversation';
+          inlineEndBtn.addEventListener('click', triggerEndConversation);
+          btnDiv.appendChild(inlineEndBtn);
+          bubble.appendChild(btnDiv);
+        }
       }
       row.appendChild(bubble);
       chatStack.appendChild(row);
@@ -613,10 +623,10 @@
       });
     });
 
-    endBtns.forEach(endBtn => endBtn.addEventListener('click', async () => {
+    async function triggerEndConversation() {
       if (busy) return;
       busy = true;
-      endBtns.forEach(b => b.disabled = true);
+      document.querySelectorAll('[data-act="end"]').forEach(b => b.disabled = true);
       addMsg('Ending conversation and saving the summary…', 'system');
       try {
         await fetch('/end/' + sessionId, { method: 'POST' });
@@ -626,9 +636,9 @@
         addMsg('Could not save the conversation summary. Is the server running?', 'system');
       } finally {
         busy = false;
-        endBtns.forEach(b => b.disabled = false);
+        document.querySelectorAll('[data-act="end"]').forEach(b => b.disabled = false);
       }
-    }));
+    }
 
     resetBtns.forEach(resetBtn => resetBtn.addEventListener('click', async () => {
       await fetch('/reset/' + sessionId, { method: 'POST' });
