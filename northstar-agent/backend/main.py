@@ -43,6 +43,17 @@ class ChatRequest(BaseModel):
 
 
 def handoff_reply(session: Session) -> str:
+    if not session.contact_captured:
+        if session.site_visit_datetime:
+            return (
+                f"Your site visit is scheduled for {session.site_visit_datetime} at Sector 79, Gurugram. "
+                "A Northstar representative will reach out to confirm, but to make sure they can reach "
+                "you, could you please share your name and best contact number?"
+            )
+        return (
+            "I've noted your request. A Northstar representative will reach out to help, but to make "
+            "sure they can reach you, could you please share your name and best contact number?"
+        )
     if session.site_visit_datetime:
         return (
             "Thanks! I've noted your details — a Northstar representative will call or WhatsApp "
@@ -70,6 +81,13 @@ def rep_handoff_reply(session: Session) -> str:
 
 def graceful_fallback(session: Session, first_failure: bool) -> str:
     if session.site_visit_datetime:
+        if not session.contact_captured:
+            return (
+                "I've hit a temporary snag with my language service. Your site visit is confirmed "
+                f"for {session.site_visit_datetime} at Sector 79, Gurugram. A Northstar representative "
+                "will reach out to confirm, but to make sure they can reach you, please share your "
+                "name and best contact number or WhatsApp."
+            )
         return (
             "I've hit a temporary snag with my language service, but here's what we have: your "
             f"site visit is confirmed for {session.site_visit_datetime} at Sector 79, Gurugram, "
